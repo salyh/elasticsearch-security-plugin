@@ -1,0 +1,25 @@
+{
+			 "rules": [
+			 	{
+				 	"hosts" : [ "*" ],
+				 	"indices" :[ "*" ],
+				 	"permission" : "ALL"
+			 	},
+			 	{
+				 	"hosts" : [ "1.2.3.4" ],
+				 	"indices" :[ "*" ],
+				 	"permission" : "NONE"
+			 	},
+			 	{
+				 	"hosts" : [ "127.0.0.1" ],
+				 	"indices" :[ "testindex1","testindex2" ],
+				 	"permission" : "READONLY"
+			 	},
+			 	{
+				 	"hosts" : [ "8.8.8.8" ],
+				 	"indices" :[ "testindex1","testindex2"],
+				 	"permission" : "READWRITE"
+			 	}
+			 ]		 		 
+}
+

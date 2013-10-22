@@ -1,0 +1,19 @@
+{
+			 "rules": [
+			 	{
+				 	"host" : [ "*" ],
+				 	"indices" :[ "*" ],
+				 	"garbage" : "ALL"
+			 	},
+			 	{
+				 	"jean" : [ "192.0.*.*"],
+				 	"luc" :[ "index1", "myindex" ],
+				 	"picard" : "READWRITE"
+			 	},
+			 	{
+				 	"james" : ["another*.*.comapny.de" ],
+				 	"t" :[ "index3"],
+				 	"kirk" : "ALL"
+			 	}
+			 ]		 		 
+}

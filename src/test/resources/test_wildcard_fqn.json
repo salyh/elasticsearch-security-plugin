@@ -1,0 +1,16 @@
+{
+			 "rules": [
+			 	{
+				 	"hosts" : [ "*" ],
+				 	"indices" :[ "*" ],
+				 	"permission" : "ALL"
+			 	},
+			 	
+			 	{
+				 	"hosts" : [ "*google.com" ],
+				 	"indices" :[ "*"],
+				 	"permission" : "NONE"
+			 	}
+			 ]		 		 
+}
+

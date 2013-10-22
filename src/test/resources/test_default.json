@@ -1,0 +1,19 @@
+{
+			 "rules": [
+			 	{
+				 	"hosts" : [ "*" ],
+				 	"indices" :[ "*" ],
+				 	"permission" : "ALL"
+			 	},
+			 	{
+				 	"hosts" : [ "192.0.*.*"],
+				 	"indices" :[ "index1", "myindex" ],
+				 	"permission" : "READWRITE"
+			 	},
+			 	{
+				 	"hosts" : ["another*.*.comapny.de" ],
+				 	"indices" :[ "index3"],
+				 	"permission" : "ALL"
+			 	}
+			 ]		 		 
+}
