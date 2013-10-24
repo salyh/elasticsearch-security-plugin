@@ -7,6 +7,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentParser.Token;
+import org.elasticsearch.plugins.security.MalformedConfigurationException;
 import org.elasticsearch.plugins.security.service.SecurityService;
 import org.elasticsearch.plugins.security.util.EditableRestRequest;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
@@ -20,13 +21,13 @@ public class FieldResponseFilter extends SecureRestFilter {
 
 	public FieldResponseFilter(final SecurityService securityService) {
 		super(securityService);
-		
+
 	}
 
 	protected XContentBuilder addFields(final XContentParser parser,
 			List<String> fields) throws Exception {
 
-			if (fields == null || fields.isEmpty()) {
+		if (fields == null || fields.isEmpty()) {
 			fields = new ArrayList<String>();
 
 			fields.add("_id");
@@ -71,10 +72,8 @@ public class FieldResponseFilter extends SecureRestFilter {
 	public void processSecure(final RestRequest request,
 			final RestChannel channel, final RestFilterChain filterChain) {
 
-		this.log.info("fieldresposnefilter " + request.rawPath());
-
-		if (!request.rawPath().contains("_search")
-				&& !request.rawPath().contains("_msearch")) {
+		if (!request.path().contains("_search")
+				&& !request.path().contains("_msearch")) {
 			this.log.debug("Not a search request");
 			filterChain.continueProcessing(request, channel);
 			return;
@@ -96,7 +95,7 @@ public class FieldResponseFilter extends SecureRestFilter {
 			return;
 		}
 
-		final EditableRestRequest newRequest = new EditableRestRequest(request);
+		this.log.debug("unmodified content " + request.content().toUtf8());
 		XContentParser parser = null;
 
 		try {
@@ -107,14 +106,26 @@ public class FieldResponseFilter extends SecureRestFilter {
 					this.getIndices(request),
 					this.getClientHostAddress(request));
 
-			parser = XContentFactory.xContent(
-					XContentFactory.xContentType(request.content()))
-					.createParser(request.content());
+			if (fields == null || fields.size() == 0) {
+				throw new MalformedConfigurationException(
+						"fields are null or empty");
+			}
 
-			newRequest.setContent(this.addFields(parser, fields).bytes());
-			this.log.debug("return modified content");
-			filterChain.continueProcessing(newRequest, channel);
-			// return;
+			if (fields.size() == 1 && "*".equals(fields.get(0))) {
+				this.log.debug("Field wildcard found, will not modify request");
+				filterChain.continueProcessing(request, channel);
+			} else {
+				parser = XContentFactory.xContent(
+						XContentFactory.xContentType(request.content()))
+						.createParser(request.content());
+
+				final EditableRestRequest newRequest = new EditableRestRequest(
+						request);
+				newRequest.setContent(this.addFields(parser, fields).bytes());
+				this.log.debug("returned modified content "
+						+ newRequest.content().toUtf8());
+				filterChain.continueProcessing(newRequest, channel);
+			}
 		} catch (final Exception e) {
 			this.log.error("Could not parse the content", e);
 			SecurityUtil.send(request, channel, RestStatus.BAD_REQUEST,
@@ -131,13 +142,13 @@ public class FieldResponseFilter extends SecureRestFilter {
 
 	@Override
 	protected String getType() {
-		
+
 		return "fieldresponsefilter";
 	}
 
 	@Override
 	protected String getId() {
-		
+
 		return "fieldresponsefilter";
 	}
 

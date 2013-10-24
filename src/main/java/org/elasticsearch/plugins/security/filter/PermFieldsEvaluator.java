@@ -9,13 +9,19 @@ public class PermFieldsEvaluator extends PermEvaluator<List<String>> {
 
 	protected PermFieldsEvaluator(final String xSecurityConfiguration) {
 		super(xSecurityConfiguration);
-		
+
 	}
 
 	@Override
 	protected List<String> createFromString(final String s) {
-		
+
+		log.debug("fields: '" + s + "'");
+
 		final List<String> fields = new ArrayList<String>();
+
+		if (s == null) {
+			return fields;
+		}
 
 		final String[] split = s.split(",");
 
@@ -23,8 +29,14 @@ public class PermFieldsEvaluator extends PermEvaluator<List<String>> {
 			fields.add(split[i]);
 		}
 
+		log.debug("fields count " + fields.size());
 		return fields;
 
+	}
+
+	@Override
+	protected String getPermissionFieldName() {
+		return "fields";
 	}
 
 }

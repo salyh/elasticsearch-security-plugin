@@ -1,5 +1,7 @@
 package org.elasticsearch.plugins.security.filter;
 
+import java.util.Arrays;
+
 import org.elasticsearch.plugins.security.MalformedConfigurationException;
 import org.elasticsearch.plugins.security.service.SecurityService;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
@@ -13,13 +15,24 @@ public class ActionPathFilter extends SecureRestFilter {
 
 	public ActionPathFilter(final SecurityService securityService) {
 		super(securityService);
-		
+
 	}
 
-	private static boolean stringContainsItemFromList(final String inputString,
-			final String[] items) {
+	private static boolean stringContainsItemFromListAsCommand(
+			final String inputString, final String[] items) {
 		for (int i = 0; i < items.length; i++) {
-			if (inputString.contains(items[i])) {
+			if (inputString.contains("/" + items[i])
+					&& !inputString.contains(items[i] + "/")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private static boolean stringContainsItemFromListAsTypeOrIndex(
+			final String inputString, final String[] items) {
+		for (int i = 0; i < items.length; i++) {
+			if (inputString.contains("/" + items[i] + "/")) {
 				return true;
 			}
 		}
@@ -32,18 +45,18 @@ public class ActionPathFilter extends SecureRestFilter {
 		}
 
 		if (request.method() == Method.POST) {
-			if (!stringContainsItemFromList(request.path(),
+			if (!stringContainsItemFromListAsCommand(request.path(),
 					BUILT_IN_READ_COMMANDS)) {
 				return true;
 			}
 		}
 
-		return stringContainsItemFromList(request.path(),
+		return stringContainsItemFromListAsCommand(request.path(),
 				BUILT_IN_WRITE_COMMANDS);
 	}
 
 	private boolean isAdminRequest(final RestRequest request) {
-		return stringContainsItemFromList(request.path(),
+		return stringContainsItemFromListAsCommand(request.path(),
 				BUILT_IN_ADMIN_COMMANDS);
 	}
 
@@ -54,6 +67,24 @@ public class ActionPathFilter extends SecureRestFilter {
 	@Override
 	public void processSecure(final RestRequest request,
 			final RestChannel channel, final RestFilterChain filterChain) {
+
+		if (stringContainsItemFromListAsTypeOrIndex(request.path(),
+				BUILT_IN_ADMIN_COMMANDS)) {
+			this.log.warn("Index- or Typename should not contains admin commands like "
+					+ Arrays.toString(BUILT_IN_ADMIN_COMMANDS));
+		}
+
+		if (stringContainsItemFromListAsTypeOrIndex(request.path(),
+				BUILT_IN_READ_COMMANDS)) {
+			this.log.warn("Index- or Typename should not contains search commands like "
+					+ Arrays.toString(BUILT_IN_READ_COMMANDS));
+		}
+
+		if (stringContainsItemFromListAsTypeOrIndex(request.path(),
+				BUILT_IN_WRITE_COMMANDS)) {
+			this.log.warn("Index- or Typename should not contains write commands like "
+					+ Arrays.toString(BUILT_IN_WRITE_COMMANDS));
+		}
 
 		try {
 
@@ -111,13 +142,13 @@ public class ActionPathFilter extends SecureRestFilter {
 
 	@Override
 	protected String getType() {
-		
+
 		return "actionpathfilter";
 	}
 
 	@Override
 	protected String getId() {
-		
+
 		return "actionpathfilter";
 	}
 

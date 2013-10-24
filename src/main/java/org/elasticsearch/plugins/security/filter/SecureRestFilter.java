@@ -48,9 +48,9 @@ public abstract class SecureRestFilter extends RestFilter {
 
 	protected List<String> getIndices(final RestRequest request) {
 		String[] indices = new String[0];
-		final String path = request.rawPath();
+		final String path = request.path();
 
-		this.log.debug("Evaluate path " + path + " to get indices");
+		this.log.info("Evaluate decoded path '" + path + "'");
 
 		if (!path.startsWith("/")) {
 
@@ -76,8 +76,6 @@ public abstract class SecureRestFilter extends RestFilter {
 	@Override
 	public final void process(final RestRequest request,
 			final RestChannel channel, final RestFilterChain filterChain) {
-
-		log.debug(this.getClass().getName() + "  process -> " + request.rawPath());
 
 		final List<String> indices = this.getIndices(request);
 		if (indices.size() == 1

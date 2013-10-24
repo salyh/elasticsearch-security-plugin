@@ -5,11 +5,19 @@ import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.ClientConfig;
 import io.searchbox.core.Index;
+import io.searchbox.core.Search;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Arrays;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.junit.Assert;
@@ -60,13 +68,14 @@ public class CommonTests {
 
 		JestResult res = client.execute(new Index.Builder(this
 				.loadFile("test_denyall.json")).index("securityconfiguration")
-				.type("actionpathfilter").id("actionpathfilter").build());
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
 
 		Assert.assertTrue(res.isSucceeded());
 
 		res = client.execute(new Index.Builder(this
 				.loadFile("dummy_content.json")).index("twitter").type("tweet")
-				.id("1").build());
+				.id("1").refresh(true).build());
 
 		Assert.assertTrue(!res.isSucceeded());
 		this.log.info(res.getJsonString());
@@ -84,17 +93,233 @@ public class CommonTests {
 
 		JestResult res = client.execute(new Index.Builder(this
 				.loadFile("test_normal.json")).index("securityconfiguration")
-				.type("actionpathfilter").id("actionpathfilter").build());
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
 
 		Assert.assertTrue(res.isSucceeded());
 
 		res = client.execute(new Index.Builder(this
 				.loadFile("dummy_content.json")).index("twitter").type("tweet")
-				.id("1").build());
+				.id("1").refresh(true).build());
 
 		Assert.assertTrue(res.isSucceeded());
 		this.log.info(res.getJsonString());
 
 	}
 
+	@Test
+	public void queryDoubleFieldTest() throws Exception {
+		final ClientConfig clientConfig = new ClientConfig.Builder(
+				"http://localhost:9200").multiThreaded(true).build();
+
+		// Construct a new Jest client according to configuration via factory
+		final JestClientFactory factory = new JestClientFactory();
+		factory.setClientConfig(clientConfig);
+		final JestClient client = factory.getObject();
+
+		JestResult res = client.execute(new Index.Builder(this
+				.loadFile("test_normal.json")).index("securityconfiguration")
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("dummy_content.json")).index("twitter").type("tweet")
+				.id("1").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_idonly.json"))
+				.index("securityconfiguration").type("fieldresponsefilter")
+				.id("fieldresponsefilter").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("field_query.json")).refresh(true).build());
+
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(!res.getJsonString().contains("user")
+				&& !res.getJsonString().contains("saly"));
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("non_field_query.json")).refresh(true).build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(!res.getJsonString().contains("user")
+				&& !res.getJsonString().contains("saly"));
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("double_field_query.json")).refresh(true).build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(!res.getJsonString().contains("user")
+				&& !res.getJsonString().contains("saly"));
+
+	}
+
+	@Test
+	public void queryNonFieldTest() throws Exception {
+		final ClientConfig clientConfig = new ClientConfig.Builder(
+				"http://localhost:9200").multiThreaded(true).build();
+
+		// Construct a new Jest client according to configuration via factory
+		final JestClientFactory factory = new JestClientFactory();
+		factory.setClientConfig(clientConfig);
+		final JestClient client = factory.getObject();
+
+		JestResult res = client.execute(new Index.Builder(this
+				.loadFile("test_normal.json")).index("securityconfiguration")
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("dummy_content.json")).index("twitter").type("tweet")
+				.id("1").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_all.json")).index("securityconfiguration")
+				.type("fieldresponsefilter").id("fieldresponsefilter")
+				.refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("field_query.json")).refresh(true).build());
+
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(res.getJsonString().contains("user")
+				&& res.getJsonString().contains("saly"));
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("non_field_query.json")).refresh(true).build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(res.getJsonString().contains("user")
+				&& res.getJsonString().contains("saly"));
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("double_field_query.json")).refresh(true).build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(res.getJsonString().contains("user")
+				&& res.getJsonString().contains("saly"));
+
+	}
+
+	@Test
+	public void queryNonFieldWhitespaceTest() throws Exception {
+		final ClientConfig clientConfig = new ClientConfig.Builder(
+				"http://localhost:9200").multiThreaded(true).build();
+
+		// Construct a new Jest client according to configuration via factory
+		final JestClientFactory factory = new JestClientFactory();
+		factory.setClientConfig(clientConfig);
+		final JestClient client = factory.getObject();
+
+		JestResult res = client.execute(new Index.Builder(this
+				.loadFile("test_normal.json")).index("securityconfiguration")
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("dummy_content.json")).index("twitter").type("tweet")
+				.id("1").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_all_whitespace.json"))
+				.index("securityconfiguration").type("fieldresponsefilter")
+				.id("fieldresponsefilter").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("field_query.json")).refresh(true).build());
+
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(res.getJsonString().contains("user")
+				&& res.getJsonString().contains("saly"));
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("non_field_query.json")).refresh(true).build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(res.getJsonString().contains("user")
+				&& res.getJsonString().contains("saly"));
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("double_field_query.json")).refresh(true).build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		Assert.assertTrue(res.getJsonString().contains("user")
+				&& res.getJsonString().contains("saly"));
+
+	}
+
+	@Test
+	public void queryGETUrlTest() throws Exception {
+		final ClientConfig clientConfig = new ClientConfig.Builder(
+				"http://localhost:9200").multiThreaded(true).build();
+
+		// Construct a new Jest client according to configuration via factory
+		final JestClientFactory factory = new JestClientFactory();
+		factory.setClientConfig(clientConfig);
+		final JestClient client = factory.getObject();
+
+		JestResult res = client.execute(new Index.Builder(this
+				.loadFile("test_normal.json")).index("securityconfiguration")
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("dummy_content.json")).index("twitter").type("tweet")
+				.id("1").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_all_whitespace.json"))
+				.index("securityconfiguration").type("fieldresponsefilter")
+				.id("fieldresponsefilter").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		final CloseableHttpClient httpclient = HttpClients.createDefault();
+		final HttpGet httpGet = new HttpGet("http://localhost:9200/%5Fsearch");
+		final CloseableHttpResponse response1 = httpclient.execute(httpGet);
+		this.log.debug(response1.getStatusLine().getStatusCode() + "");
+		final HttpEntity entity1 = response1.getEntity();
+		this.log.debug(EntityUtils.toString(entity1));
+
+	}
+
+	@Test
+	public void httptest() throws Exception {
+		final CloseableHttpClient httpclient = HttpClients.createDefault();
+		final HttpGet httpGet = new HttpGet(
+				"http://localhost:9200/securityconfiguration/%5Fsearch");
+		// spoof
+		httpGet.addHeader("X-Forwarded-For", "www.google.de");
+		this.log.debug("headers: " + Arrays.toString(httpGet.getAllHeaders()));
+		final CloseableHttpResponse response1 = httpclient.execute(httpGet);
+		this.log.debug(response1.getStatusLine().getStatusCode() + "");
+		final HttpEntity entity1 = response1.getEntity();
+		this.log.debug(EntityUtils.toString(entity1));
+
+	}
 }

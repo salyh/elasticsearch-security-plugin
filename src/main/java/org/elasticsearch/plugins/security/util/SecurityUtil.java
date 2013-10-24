@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.http.HttpRequest;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestStatus;
@@ -19,7 +20,7 @@ public class SecurityUtil {
 	private static final ESLogger log = Loggers.getLogger(SecurityUtil.class);
 
 	private SecurityUtil() {
-		
+
 	}
 
 	public static void send(final RestRequest request,
@@ -51,23 +52,12 @@ public class SecurityUtil {
 	public static InetAddress getHostAddressFromRequest(
 			final RestRequest request, final String xForwardFor)
 			throws UnknownHostException {
-		String addr;
-		if (xForwardFor == null || xForwardFor.isEmpty()) {
-			addr = request.header("Host");
-			addr = addr == null ? "" : addr;
-		} else {
-			addr = request.header(xForwardFor);
-			addr = addr == null ? "" : addr;
-			final int addrIndex = addr.indexOf(',');
-			if (addrIndex >= 0) {
-				addr = addr.substring(0, addrIndex);
-			}
-		}
 
-		final int portIndex = addr.indexOf(":");
-		if (portIndex >= 0) {
-			addr = addr.substring(0, portIndex);
-		}
+		final String addr = ((HttpRequest) request).remoteAddr();
+
+		log.debug("hostname: " + addr);
+
+		// if null or "" then loopback is returned
 		return InetAddress.getByName(addr);
 	}
 

@@ -27,29 +27,31 @@ public class SecurityService extends
 		this.securityConfigurationIndex = settings.get(
 				"security.configuration.index", DEFAULT_SECURITY_CONFIG_INDEX);
 
-		
-		
 	}
 
 	@Override
 	protected void doStart() throws ElasticSearchException {
-		
 
 		this.restController.registerFilter(new ActionPathFilter(this));
 		this.restController.registerFilter(new FieldResponseFilter(this));
-		logger.debug("security.configuration.index="+securityConfigurationIndex);
+		this.logger.debug("security.configuration.index="
+				+ this.securityConfigurationIndex);
+
+		// TODO disable dynamic scripting for this node
+		// https://github.com/yakaz/elasticsearch-action-reloadsettings/blob/master/src/main/java/org/elasticsearch/action/reloadsettings/ESInternalSettingsPerparer.java
+		// client.execute(action, request)
 
 	}
 
 	@Override
 	protected void doStop() throws ElasticSearchException {
-		
-		logger.debug("doStop");
+
+		this.logger.debug("doStop");
 	}
 
 	@Override
 	protected void doClose() throws ElasticSearchException {
-		logger.debug("doClose())");
+		this.logger.debug("doClose())");
 
 	}
 

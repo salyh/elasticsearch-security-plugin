@@ -34,56 +34,58 @@ public abstract class PermEvaluator<T> {
 
 	protected abstract T createFromString(String s);
 
+	protected abstract String getPermissionFieldName();
+
 	public T evaluatePerm(final List<String> indices,
 			final InetAddress hostAddress)
 			throws MalformedConfigurationException {
-
-		
 
 		final List<Perm<T>> perms = new ArrayList<Perm<T>>();
 		final List<WildcardIpOrHostname> matchList = new ArrayList<WildcardIpOrHostname>();
 
 		try {
-			
+
 			this.parser = XContentFactory.xContent(this.xSecurityConfiguration)
 					.createParser(this.xSecurityConfiguration);
-			
+
+			final String permissionFieldName = this.getPermissionFieldName();
+
 			XContentParser.Token token;
 			String currentFieldName = null;
-			Perm<T> currentPerm= null;
+			Perm<T> currentPerm = null;
 			while ((token = this.parser.nextToken()) != null) {
 
 				if (token == XContentParser.Token.START_OBJECT) {
-					currentPerm= new Perm<T>();
+					currentPerm = new Perm<T>();
 				} else if (token == XContentParser.Token.END_OBJECT) {
 					perms.add(currentPerm);
 				} else if (token == XContentParser.Token.FIELD_NAME) {
 					currentFieldName = this.parser.currentName();
-			
-				} else if (token.isValue()) {				
+
+				} else if (token.isValue()) {
 
 					if ("hosts".equals(currentFieldName)) {
 						currentPerm.setInetAddress(this.parser.text());
-					} else if ("indices".equals(currentFieldName)) {						
+					} else if ("indices".equals(currentFieldName)) {
 						currentPerm.addIndice(this.parser.text());
-					} else if ("permission".equals(currentFieldName)) {
+					} else if (permissionFieldName.equals(currentFieldName)) {
+						final String text = this.parser.text();
 						currentPerm.setPermLevel(this
-								.createFromString(this.parser.text()));
+								.createFromString(text == null ? null : text
+										.trim()));
 					}
 
 				}
 
 			}
-			
-		}catch(Exception e)
-		{
+
+		} catch (final Exception e) {
 			throw new MalformedConfigurationException(e);
-		}
-		finally {
+		} finally {
 			this.parser.close();
 		}
 
-		for (final Perm<T>p : perms) {
+		for (final Perm<T> p : perms) {
 			matchList.add(new WildcardIpOrHostname(p.inetAddress));
 		}
 
@@ -126,16 +128,15 @@ public abstract class PermEvaluator<T> {
 						|| p.indices.containsAll(indices)) {
 					log.debug("All indexes match, will apply this permission");
 
-					
 					if (permLevel != p.permLevel) {
 						log.debug("Adjust permlevel from " + permLevel + " to "
 								+ p.permLevel);
 						permLevel = p.permLevel;
-						
+
 					}
 				} else {
 					log.debug("Not all indexes match, so skip this permission");
-					log.debug(p.indices +" != "+indices);
+					log.debug(p.indices + " != " + indices);
 				}
 
 			} else {
@@ -149,7 +150,7 @@ public abstract class PermEvaluator<T> {
 	}
 
 	protected static class Perm<T> {
-		
+
 		private String inetAddress = null;
 		private final List<String> indices = new ArrayList<String>();
 		private T permLevel = null;
@@ -160,33 +161,33 @@ public abstract class PermEvaluator<T> {
 		}
 
 		public void setInetAddress(final String inetAddress) {
-			
-			if(inetAddress == null || inetAddress.isEmpty() || inetAddress.contains(","))
-			{
-				throw new IllegalArgumentException("'"+inetAddress+"' is not a valid host name");
+
+			if (inetAddress == null || inetAddress.isEmpty()
+					|| inetAddress.contains(",")) {
+				throw new IllegalArgumentException("'" + inetAddress
+						+ "' is not a valid host name");
 			}
-			
-			this.inetAddress = inetAddress;
+
+			this.inetAddress = inetAddress.trim();
 		}
 
 		public void addIndice(final String indice) {
-			if(indice == null || indice.isEmpty() || indice.contains(","))
-			{
-				throw new IllegalArgumentException("'"+indice+"' is not a valid index name");
+			if (indice == null || indice.isEmpty() || indice.contains(",")) {
+				throw new IllegalArgumentException("'" + indice
+						+ "' is not a valid index name");
 			}
-			this.indices.add(indice);
+			this.indices.add(indice.trim());
 		}
 
 		public void setPermLevel(final T permLevel) {
-			
-			if(permLevel == null)
-			{
-				throw new IllegalArgumentException("'"+permLevel+"' is not a valid permLevel");
+
+			if (permLevel == null) {
+				throw new IllegalArgumentException("'" + permLevel
+						+ "' is not a valid permLevel");
 			}
-			
+
 			this.permLevel = permLevel;
 		}
-	
 
 		public Perm() {
 
@@ -267,21 +268,17 @@ public abstract class PermEvaluator<T> {
 			}
 			final WildcardIpOrHostname other = (WildcardIpOrHostname) obj;
 
-			
-
 			final Pattern p = Pattern.compile(this.getEscaped());
 			final Matcher m = p.matcher(other.wildcardIpOrHostname);
 			final boolean match = m.matches();
-			
+
 			if (log.isDebugEnabled()) {
 				log.debug("REGEX " + this.getEscaped() + " on "
-						+ other.wildcardIpOrHostname +" matched? "+match);
+						+ other.wildcardIpOrHostname + " matched? " + match);
 			}
-
 
 			return match;
 
-			
 		}
 
 		private String getEscaped() {

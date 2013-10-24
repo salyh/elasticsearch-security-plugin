@@ -1,0 +1,7 @@
+{
+    "fields" : ["user", "message"],
+    "query" : {
+        "term" : { "user" : "saly" }
+    },
+	"fields" : ["user", "message"]
+}

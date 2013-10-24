@@ -6,13 +6,17 @@ public class PermLevelEvaluator extends PermEvaluator<PermLevel> {
 
 	protected PermLevelEvaluator(final String xSecurityConfiguration) {
 		super(xSecurityConfiguration);
-		
+
 	}
 
 	@Override
 	protected PermLevel createFromString(final String s) {
-		
+
 		return PermLevel.valueOf(s);
 	}
 
+	@Override
+	protected String getPermissionFieldName() {
+		return "permission";
+	}
 }

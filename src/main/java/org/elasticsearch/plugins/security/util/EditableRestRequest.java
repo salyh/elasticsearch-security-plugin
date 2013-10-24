@@ -58,54 +58,65 @@ public class EditableRestRequest extends AbstractRestRequest {
 		this.contentUnsafe = contentUnsafe;
 	}
 
+	@Override
 	public Method method() {
 		return this.method;
 	}
 
+	@Override
 	public String uri() {
 		return this.uri;
 	}
 
+	@Override
 	public String rawPath() {
 
 		return this.rawPath;
 	}
 
+	@Override
 	public boolean hasContent() {
 
 		return this.hasContent;
 	}
 
+	@Override
 	public boolean contentUnsafe() {
 
 		return this.contentUnsafe;
 	}
 
+	@Override
 	public BytesReference content() {
 
 		return this.content;
 	}
 
+	@Override
 	public String header(final String name) {
 
 		return this.innerRestquest.header(name);
 	}
 
+	@Override
 	public boolean hasParam(final String key) {
 
 		return this.params.containsKey(key);
 	}
 
+	@Override
 	public String param(final String key) {
 
 		return this.params.get(key);
 	}
 
+	@Override
 	public Map<String, String> params() {
 
 		return this.params;
 	}
 
+	@Override
 	public String param(final String key, final String defaultValue) {
 		final String value = this.params.get(key);
 		if (value == null) {
