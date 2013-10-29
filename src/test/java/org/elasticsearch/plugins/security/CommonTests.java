@@ -38,7 +38,9 @@ import com.github.tlrx.elasticsearch.test.support.junit.runners.ElasticsearchRun
 		@ElasticsearchSetting(name = "path.data", value = "target/data"),
 		@ElasticsearchSetting(name = "path.plugins", value = "target/plugins"),
 		@ElasticsearchSetting(name = "path.conf", value = "target/config"),
-		@ElasticsearchSetting(name = "path.logs", value = "target/log") })
+		@ElasticsearchSetting(name = "path.logs", value = "target/log"),
+		@ElasticsearchSetting(name = "http.type", value = "org.elasticsearch.plugins.security.http.netty.NettyHttpServerTransportModule")})
+
 public class CommonTests {
 
 	protected final ESLogger log = Loggers.getLogger(this.getClass());
@@ -72,7 +74,7 @@ public class CommonTests {
 				.build());
 
 		Assert.assertTrue(res.isSucceeded());
-
+			
 		res = client.execute(new Index.Builder(this
 				.loadFile("dummy_content.json")).index("twitter").type("tweet")
 				.id("1").refresh(true).build());
