@@ -19,160 +19,170 @@
 
 package org.elasticsearch.plugins.security.http.netty;
 
-import org.elasticsearch.common.bytes.BytesArray;
-import org.elasticsearch.common.bytes.BytesReference;
-import org.elasticsearch.common.bytes.ChannelBufferBytesReference;
-import org.elasticsearch.rest.support.AbstractRestRequest;
-import org.elasticsearch.rest.support.RestUtils;
-import org.elasticsearch.common.netty.channel.Channel;
-import org.elasticsearch.common.netty.handler.codec.http.HttpMethod;
-
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasticsearch.common.bytes.BytesArray;
+import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.common.bytes.ChannelBufferBytesReference;
+import org.elasticsearch.common.netty.channel.Channel;
+import org.elasticsearch.common.netty.handler.codec.http.HttpMethod;
+import org.elasticsearch.rest.support.AbstractRestRequest;
+import org.elasticsearch.rest.support.RestUtils;
+
 /**
  *
  */
-public class NettyHttpRequest extends AbstractRestRequest implements org.elasticsearch.plugins.security.http.HttpRequest {
+public class NettyHttpRequest extends AbstractRestRequest implements
+		org.elasticsearch.plugins.security.http.HttpRequest {
 
-    private final org.elasticsearch.common.netty.handler.codec.http.HttpRequest request;
+	private final org.elasticsearch.common.netty.handler.codec.http.HttpRequest request;
 
-    private final Map<String, String> params;
+	private final Map<String, String> params;
 
-    private final String rawPath;
+	private final String rawPath;
 
-    private final BytesReference content;
-    
-private final String opaqueId;
-    
-    private final InetSocketAddress remoteAddress;
-    
-    private final InetSocketAddress localAddress;
+	private final BytesReference content;
 
-    public NettyHttpRequest(org.elasticsearch.common.netty.handler.codec.http.HttpRequest request, Channel channel) {
-        this.request = request;
-        this.opaqueId = request.getHeader("X-Opaque-Id");
-        this.remoteAddress = (InetSocketAddress) channel.getRemoteAddress();
-        this.localAddress = (InetSocketAddress) channel.getLocalAddress();
-        this.params = new HashMap<String, String>();
-        if (request.getContent().readable()) {
-            this.content = new ChannelBufferBytesReference(request.getContent());
-        } else {
-            this.content = BytesArray.EMPTY;
-        }
+	private final String opaqueId;
 
-        String uri = request.getUri();
-        int pathEndPos = uri.indexOf('?');
-        if (pathEndPos < 0) {
-            this.rawPath = uri;
-        } else {
-            this.rawPath = uri.substring(0, pathEndPos);
-            RestUtils.decodeQueryString(uri, pathEndPos + 1, params);
-        }
-    }
+	private final InetSocketAddress remoteAddress;
 
-    @Override
-    public Method method() {
-        HttpMethod httpMethod = request.getMethod();
-        if (httpMethod == HttpMethod.GET)
-            return Method.GET;
+	private final InetSocketAddress localAddress;
 
-        if (httpMethod == HttpMethod.POST)
-            return Method.POST;
+	public NettyHttpRequest(
+			final org.elasticsearch.common.netty.handler.codec.http.HttpRequest request,
+			final Channel channel) {
+		this.request = request;
+		this.opaqueId = request.getHeader("X-Opaque-Id");
+		this.remoteAddress = (InetSocketAddress) channel.getRemoteAddress();
+		this.localAddress = (InetSocketAddress) channel.getLocalAddress();
+		this.params = new HashMap<String, String>();
+		if (request.getContent().readable()) {
+			this.content = new ChannelBufferBytesReference(request.getContent());
+		} else {
+			this.content = BytesArray.EMPTY;
+		}
 
-        if (httpMethod == HttpMethod.PUT)
-            return Method.PUT;
+		final String uri = request.getUri();
+		final int pathEndPos = uri.indexOf('?');
+		if (pathEndPos < 0) {
+			this.rawPath = uri;
+		} else {
+			this.rawPath = uri.substring(0, pathEndPos);
+			RestUtils.decodeQueryString(uri, pathEndPos + 1, this.params);
+		}
+	}
 
-        if (httpMethod == HttpMethod.DELETE)
-            return Method.DELETE;
+	@Override
+	public Method method() {
+		final HttpMethod httpMethod = this.request.getMethod();
+		if (httpMethod == HttpMethod.GET) {
+			return Method.GET;
+		}
 
-        if (httpMethod == HttpMethod.HEAD) {
-            return Method.HEAD;
-        }
+		if (httpMethod == HttpMethod.POST) {
+			return Method.POST;
+		}
 
-        if (httpMethod == HttpMethod.OPTIONS) {
-            return Method.OPTIONS;
-        }
+		if (httpMethod == HttpMethod.PUT) {
+			return Method.PUT;
+		}
 
-        return Method.GET;
-    }
+		if (httpMethod == HttpMethod.DELETE) {
+			return Method.DELETE;
+		}
 
-    @Override
-    public String uri() {
-        return request.getUri();
-    }
+		if (httpMethod == HttpMethod.HEAD) {
+			return Method.HEAD;
+		}
 
-    @Override
-    public String rawPath() {
-        return rawPath;
-    }
+		if (httpMethod == HttpMethod.OPTIONS) {
+			return Method.OPTIONS;
+		}
 
-    @Override
-    public Map<String, String> params() {
-        return params;
-    }
+		return Method.GET;
+	}
 
-    @Override
-    public boolean hasContent() {
-        return content.length() > 0;
-    }
+	@Override
+	public String uri() {
+		return this.request.getUri();
+	}
 
-    @Override
-    public boolean contentUnsafe() {
-        // Netty http decoder always copies over the http content
-        return false;
-    }
+	@Override
+	public String rawPath() {
+		return this.rawPath;
+	}
 
-    @Override
-    public BytesReference content() {
-        return content;
-    }
+	@Override
+	public Map<String, String> params() {
+		return this.params;
+	}
 
-    @Override
-    public String header(String name) {
-        return request.getHeader(name);
-    }
+	@Override
+	public boolean hasContent() {
+		return this.content.length() > 0;
+	}
 
-    @Override
-    public boolean hasParam(String key) {
-        return params.containsKey(key);
-    }
+	@Override
+	public boolean contentUnsafe() {
+		// Netty http decoder always copies over the http content
+		return false;
+	}
 
-    @Override
-    public String param(String key) {
-        return params.get(key);
-    }
+	@Override
+	public BytesReference content() {
+		return this.content;
+	}
 
-    @Override
-    public String param(String key, String defaultValue) {
-        String value = params.get(key);
-        if (value == null) {
-            return defaultValue;
-        }
-        return value;
-    }
+	@Override
+	public String header(final String name) {
+		return this.request.getHeader(name);
+	}
+
+	@Override
+	public boolean hasParam(final String key) {
+		return this.params.containsKey(key);
+	}
+
+	@Override
+	public String param(final String key) {
+		return this.params.get(key);
+	}
+
+	@Override
+	public String param(final String key, final String defaultValue) {
+		final String value = this.params.get(key);
+		if (value == null) {
+			return defaultValue;
+		}
+		return value;
+	}
 
 	@Override
 	public String localAddr() {
-        return this.localAddress.getAddress().getHostAddress();
-    }
-	@Override
-    public long localPort() {
-        return this.localAddress.getPort();
-    }
+		return this.localAddress.getAddress().getHostAddress();
+	}
 
-    //TODO: Think about X-Forwarded-For header
+	@Override
+	public long localPort() {
+		return this.localAddress.getPort();
+	}
+
 	@Override
 	public String remoteAddr() {
-        return this.remoteAddress.getAddress().getHostAddress();
-    }
+
+		return this.remoteAddress.getAddress().getHostAddress();
+	}
+
 	@Override
-    public long remotePort() {
-        return this.remoteAddress.getPort();
-    }   
+	public long remotePort() {
+		return this.remoteAddress.getPort();
+	}
+
 	@Override
-    public String opaqueId() {
-        return this.opaqueId;
-    }
+	public String opaqueId() {
+		return this.opaqueId;
+	}
 }

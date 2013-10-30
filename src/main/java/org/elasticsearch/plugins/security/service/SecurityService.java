@@ -1,5 +1,10 @@
 package org.elasticsearch.plugins.security.service;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.List;
+
 import org.elasticsearch.ElasticSearchException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
@@ -7,7 +12,9 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.plugins.security.filter.ActionPathFilter;
 import org.elasticsearch.plugins.security.filter.FieldResponseFilter;
+import org.elasticsearch.plugins.security.http.HttpRequest;
 import org.elasticsearch.rest.RestController;
+import org.elasticsearch.rest.RestRequest;
 
 public class SecurityService extends
 		AbstractLifecycleComponent<SecurityService> {
@@ -16,12 +23,14 @@ public class SecurityService extends
 	private final String securityConfigurationIndex;
 	private final RestController restController;
 	private final Client client;
+	private final Settings settings;
 
 	@Inject
 	public SecurityService(final Settings settings, final Client client,
 			final RestController restController) {
 		super(settings);
 
+		this.settings = settings;
 		this.restController = restController;
 		this.client = client;
 		this.securityConfigurationIndex = settings.get(
@@ -63,6 +72,69 @@ public class SecurityService extends
 
 	public String getSecurityConfigurationIndex() {
 		return this.securityConfigurationIndex;
+	}
+
+	public InetAddress getHostAddressFromRequest(final RestRequest request)
+			throws UnknownHostException {
+
+		this.logger.debug(request.getClass().toString());
+
+		String addr = ((HttpRequest) request).remoteAddr();
+
+		this.logger.debug("original hostname: " + addr);
+
+		if (addr == null || addr.isEmpty()) {
+			throw new UnknownHostException("Original host is <null> or <empty>");
+		}
+
+		// security.http.xforwardfor.header
+		// security.http.xforwardfor.trustedproxies
+		// security.http.xforwardfor.enforce
+		final String xForwardedForHeader = this.settings
+				.get("security.http.xforwardedfor.header");
+
+		if (xForwardedForHeader != null && !xForwardedForHeader.isEmpty()) {
+
+			final String xForwardedForValue = request
+					.header(xForwardedForHeader);
+			final String xForwardedTrustedProxiesS = this.settings
+					.get("security.http.xforwardedfor.trustedproxies");
+			final String[] xForwardedTrustedProxies = xForwardedTrustedProxiesS == null ? new String[0]
+					: xForwardedTrustedProxiesS.replace(" ", "").split(",");
+			final boolean xForwardedEnforce = this.settings.getAsBoolean(
+					"security.http.xforwardedfor.enforce", false);
+
+			if (xForwardedForValue != null && !xForwardedForValue.isEmpty()) {
+				final List<String> addresses = Arrays.asList(xForwardedForValue
+						.replace(" ", "").split(","));
+				final List<String> proxies = addresses.subList(1,
+						addresses.size());
+
+				if (proxies
+						.containsAll(Arrays.asList(xForwardedTrustedProxies))) {
+					addr = addresses.get(0).trim();
+
+				} else {
+					throw new UnknownHostException(
+							"Not all proxies are trusted");
+				}
+
+			} else {
+				if (xForwardedEnforce) {
+					throw new UnknownHostException(
+							"Forward header enforced but not present");
+				}
+			}
+
+		}
+
+		if (addr == null || addr.isEmpty()) {
+			throw new UnknownHostException("Host is <null> or <empty>");
+		}
+
+		// if null or "" then loopback is returned
+		return InetAddress.getByName(addr);
+
 	}
 
 }

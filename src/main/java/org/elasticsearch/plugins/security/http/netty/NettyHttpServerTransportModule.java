@@ -27,9 +27,10 @@ import org.elasticsearch.http.HttpServerTransport;
  */
 public class NettyHttpServerTransportModule extends AbstractModule {
 
-    @Override
-    protected void configure() {
-    	   	
-        bind(HttpServerTransport.class).to(NettyHttpServerTransport.class).asEagerSingleton();
-    }
+	@Override
+	protected void configure() {
+
+		this.bind(HttpServerTransport.class).to(NettyHttpServerTransport.class)
+				.asEagerSingleton();
+	}
 }

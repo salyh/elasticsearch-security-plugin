@@ -19,11 +19,12 @@
 
 package org.elasticsearch.plugins.security.http.netty;
 
-import org.elasticsearch.common.netty.channel.*;
+import org.elasticsearch.common.netty.channel.ChannelHandler;
+import org.elasticsearch.common.netty.channel.ChannelHandlerContext;
+import org.elasticsearch.common.netty.channel.ExceptionEvent;
+import org.elasticsearch.common.netty.channel.MessageEvent;
+import org.elasticsearch.common.netty.channel.SimpleChannelUpstreamHandler;
 import org.elasticsearch.common.netty.handler.codec.http.HttpRequest;
-
-
-
 
 /**
  *
@@ -31,23 +32,29 @@ import org.elasticsearch.common.netty.handler.codec.http.HttpRequest;
 @ChannelHandler.Sharable
 public class HttpRequestHandler extends SimpleChannelUpstreamHandler {
 
-    private final NettyHttpServerTransport serverTransport;
+	private final NettyHttpServerTransport serverTransport;
 
-    public HttpRequestHandler(NettyHttpServerTransport serverTransport) {
-        this.serverTransport = serverTransport;
-    }
+	public HttpRequestHandler(final NettyHttpServerTransport serverTransport) {
+		this.serverTransport = serverTransport;
+	}
 
-    @Override
-    public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) throws Exception {
-        HttpRequest request = (HttpRequest) e.getMessage();
-        // the netty HTTP handling always copy over the buffer to its own buffer, either in NioWorker internally
-        // when reading, or using a cumulation buffer
-        serverTransport.dispatchRequest(new NettyHttpRequest(request, e.getChannel()), new NettyHttpChannel(serverTransport, e.getChannel(), request));
-        super.messageReceived(ctx, e);
-    }
+	@Override
+	public void messageReceived(final ChannelHandlerContext ctx,
+			final MessageEvent e) throws Exception {
+		final HttpRequest request = (HttpRequest) e.getMessage();
+		// the netty HTTP handling always copy over the buffer to its own
+		// buffer, either in NioWorker internally
+		// when reading, or using a cumulation buffer
+		this.serverTransport.dispatchRequest(
+				new NettyHttpRequest(request, e.getChannel()),
+				new NettyHttpChannel(this.serverTransport, e.getChannel(),
+						request));
+		super.messageReceived(ctx, e);
+	}
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
-        serverTransport.exceptionCaught(ctx, e);
-    }
+	@Override
+	public void exceptionCaught(final ChannelHandlerContext ctx,
+			final ExceptionEvent e) throws Exception {
+		this.serverTransport.exceptionCaught(ctx, e);
+	}
 }

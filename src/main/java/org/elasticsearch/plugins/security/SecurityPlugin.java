@@ -18,18 +18,15 @@ public class SecurityPlugin extends AbstractPlugin {
 	}
 
 	@SuppressWarnings("rawtypes")
-	    @Override 
-	    public Collection<Class<? extends LifecycleComponent>> services() {
-	        Collection<Class<? extends LifecycleComponent>> services = Lists.newArrayList();
-	
-	        
-	            services.add(SecurityService.class);
-	        
-	        return services;
-	   }
-	
-	
-	
+	@Override
+	public Collection<Class<? extends LifecycleComponent>> services() {
+		final Collection<Class<? extends LifecycleComponent>> services = Lists
+				.newArrayList();
+
+		services.add(SecurityService.class);
+
+		return services;
+	}
 
 	@Override
 	public String description() {

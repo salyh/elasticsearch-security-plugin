@@ -1,13 +1,10 @@
 package org.elasticsearch.plugins.security.util;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.plugins.security.http.HttpRequest;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestStatus;
@@ -46,28 +43,6 @@ public class SecurityUtil {
 			} catch (final IOException e1) {
 				log.error("Failed to send a failure response.", e1);
 			}
-		}
-	}
-
-	public static InetAddress getHostAddressFromRequest(
-			final RestRequest request, final String xForwardFor)
-			throws UnknownHostException {
-
-		log.debug(request.getClass().toString());
-		
-		final String addr = ((HttpRequest) request).remoteAddr();
-
-		log.debug("hostname: " + addr);
-		
-		if(addr == null || addr.isEmpty())
-		{
-			throw new UnknownHostException("<null> or <empty>");
-		}else
-		{
-
-		// if null or "" then loopback is returned
-		return InetAddress.getByName(addr);
-		
 		}
 	}
 

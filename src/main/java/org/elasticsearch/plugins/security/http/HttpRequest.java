@@ -19,17 +19,20 @@
 
 package org.elasticsearch.plugins.security.http;
 
-import org.elasticsearch.rest.RestRequest;
 
 /**
  *
  */
 public interface HttpRequest extends org.elasticsearch.http.HttpRequest {
-    
-    public String localAddr();
-    public long localPort();
-    public String remoteAddr();
-    public long remotePort();
-    public String opaqueId() ;
+
+	public String localAddr();
+
+	public long localPort();
+
+	public String remoteAddr();
+
+	public long remotePort();
+
+	public String opaqueId();
 
 }

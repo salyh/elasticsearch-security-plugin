@@ -40,8 +40,9 @@ public abstract class SecureRestFilter extends RestFilter {
 
 	protected InetAddress getClientHostAddress(final RestRequest request)
 			throws UnknownHostException {
-		final InetAddress hostAddress = SecurityUtil.getHostAddressFromRequest(
-				request, this.xForwardFor);
+
+		final InetAddress hostAddress = this.securityService
+				.getHostAddressFromRequest(request);
 		this.log.debug("Client IP: " + hostAddress);
 		return hostAddress;
 	}
