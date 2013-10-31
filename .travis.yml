@@ -1,0 +1,12 @@
+language: java
+jdk:
+  - openjdk6
+  - openjdk7
+  - oraclejdk7
+
+notifications:
+  email:
+    recipients:
+      - hendrikdev22@gmail.com
+    on_success: always
+    on_failure: always
