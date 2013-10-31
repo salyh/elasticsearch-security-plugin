@@ -100,4 +100,40 @@ Permissions:
 }'</code></pre>
 
 Fields:
-* List of fields (comma separated) which will be returned for a POST _search/_msearch query
+* List of fields (comma separated) which will be returned for a POST \_search/\_msearch query
+
+
+In a more formal way the configuration looks like:
+
+* Format is JSON
+* One top level array named "rules"
+* The single wildchar character (\*) match any host or any index
+* In hostnames or ip's you can use the wildchar character (\*) for specifing subnets
+* The rules elemens look like:
+
+<pre><code>
+
+
+			 	{
+				 	"hosts" : [ &lt;* or list of hostnames/ip's for which this rule apply&gt; ],
+				 	"indices" :[ &lt;* or list of indices for which this rule apply&gt; ],
+				 	"&lt;qualification name\>" : &lt;qualification string&gt;
+			 	}
+			 	
+</code></pre>
+ 
+* There must be exactly one default rule:
+
+<pre><code>
+
+
+			 	{
+				 	"hosts" : [ "*" ],
+				 	"indices" :[ "*" ],
+				 	"&lt;qualification name\>" : &lt;qualification string&gt;
+			 	}
+			 	
+</code></pre>
+
+* I more than one rule match then the last one (right down at the bottom of the security config) is used
+
