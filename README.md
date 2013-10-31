@@ -9,7 +9,12 @@ As of now two security modules are implemented:
 
 <h3>Installation</h3>
 
-plugin.bat -url http://xxx/xxx -install elasticsearch-security-plugin
+Windows:
+``plugin.bat --url http://goo.gl/1JwMKw --install elasticsearch-security-plugin-0.0.1.Beta1``
+
+UNIX:
+``plugin --url http://goo.gl/1JwMKw  --install elasticsearch-security-plugin-0.0.1.Beta1``
+
 
 
 <h3>Configuration</h3>
@@ -19,9 +24,9 @@ Enable the security plugin
 * ``http.type:org.elasticsearch.plugins.security.http.netty.NettyHttpServerTransportModule``
 
 Optionally enable XFF 
-* ``security.http.xforwardedfor.header:X-Forwarded-For``
-* ``security.http.xforwardedfor.trustedproxies:<List of proxy ip's>``
-* ``security.http.xforwardedfor.enforce:false``
+* ``security.http.xforwardedfor.header:X-Forwarded-For`` Enable XFF
+* ``security.http.xforwardedfor.trustedproxies:<List of proxy ip's>`` Example: 192.168.1.1, 31.122.45.1, 193.54.55.21
+* ``security.http.xforwardedfor.enforce:true`` Enforce XFF header, default: false
 
 <h4>Configuration (security rules)</h4>
 The security rules for each module are stored in an index ``securityconfiguration``.
