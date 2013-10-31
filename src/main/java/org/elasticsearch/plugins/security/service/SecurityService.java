@@ -2,6 +2,7 @@ package org.elasticsearch.plugins.security.service;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -107,11 +108,21 @@ public class SecurityService extends
 			if (xForwardedForValue != null && !xForwardedForValue.isEmpty()) {
 				final List<String> addresses = Arrays.asList(xForwardedForValue
 						.replace(" ", "").split(","));
-				final List<String> proxies = addresses.subList(1,
-						addresses.size());
+				final List<String> proxiesPassed = new ArrayList<String>(addresses.subList(1,
+						addresses.size()));
+				
+				if(xForwardedTrustedProxies.length == 0)
+				{
+					throw new UnknownHostException(
+							"No trusted proxies");					
+				}
+				
+				proxiesPassed.removeAll(Arrays.asList(xForwardedTrustedProxies));
 
-				if (proxies
-						.containsAll(Arrays.asList(xForwardedTrustedProxies))) {
+				logger.debug(proxiesPassed.size()+"/"+proxiesPassed);
+				
+				if (proxiesPassed.size()==0 && (Arrays.asList(xForwardedTrustedProxies).contains(addr) || "127.0.0.1".equals(addr))) {
+								
 					addr = addresses.get(0).trim();
 
 				} else {

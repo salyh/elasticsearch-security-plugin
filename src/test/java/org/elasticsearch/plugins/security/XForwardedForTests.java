@@ -54,6 +54,42 @@ public class XForwardedForTests {
 	}
 
 	@Test
+	public void singleHeaderTest() throws Exception {
+		final ClientConfig clientConfig = new ClientConfig.Builder(
+				"http://localhost:9200").multiThreaded(true).build();
+
+		// Construct a new Jest client according to configuration via factory
+		final JestClientFactory factory = new JestClientFactory();
+		factory.setClientConfig(clientConfig);
+		final JestClient client = factory.getObject();
+
+		JestResult res = client.execute(new Index.Builder(this
+				.loadFile("test_normal.json")).index("securityconfiguration")
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
+
+		this.log.debug(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_idonly.json"))
+				.index("securityconfiguration").type("fieldresponsefilter")
+				.id("fieldresponsefilter").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("non_field_query.json"))
+				.refresh(true)
+				.setHeader("X-Forwarded-For",
+						"3.1.55.2").build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+
+	}
+
+	
+	@Test
 	public void badProxiesTest() throws Exception {
 		final ClientConfig clientConfig = new ClientConfig.Builder(
 				"http://localhost:9200").multiThreaded(true).build();
@@ -70,6 +106,13 @@ public class XForwardedForTests {
 
 		this.log.debug(res.getJsonString());
 		Assert.assertTrue(res.isSucceeded());
+		
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_idonly.json"))
+				.index("securityconfiguration").type("fieldresponsefilter")
+				.id("fieldresponsefilter").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
 
 		res = client.execute(new Search.Builder(this
 				.loadFile("non_field_query.json"))
@@ -80,7 +123,7 @@ public class XForwardedForTests {
 		Assert.assertTrue(!res.isSucceeded());
 
 	}
-
+	
 	@Test
 	public void goodProxiesTest() throws Exception {
 		final ClientConfig clientConfig = new ClientConfig.Builder(
@@ -98,12 +141,56 @@ public class XForwardedForTests {
 
 		this.log.debug(res.getJsonString());
 		Assert.assertTrue(res.isSucceeded());
+		
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_idonly.json"))
+				.index("securityconfiguration").type("fieldresponsefilter")
+				.id("fieldresponsefilter").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
 
 		res = client.execute(new Search.Builder(this
 				.loadFile("non_field_query.json"))
 				.refresh(true)
 				.setHeader("X-Forwarded-For",
 						"3.1.55.2, 123.123.123.123, 111.222.111.222").build());
+		this.log.info(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+
+	}
+
+	
+	@Test
+	public void goodProxiesTestSingle() throws Exception {
+		final ClientConfig clientConfig = new ClientConfig.Builder(
+				"http://localhost:9200").multiThreaded(true).build();
+
+		// Construct a new Jest client according to configuration via factory
+		final JestClientFactory factory = new JestClientFactory();
+		factory.setClientConfig(clientConfig);
+		final JestClient client = factory.getObject();
+
+		JestResult res = client.execute(new Index.Builder(this
+				.loadFile("test_normal.json")).index("securityconfiguration")
+				.type("actionpathfilter").id("actionpathfilter").refresh(true)
+				.build());
+
+		this.log.debug(res.getJsonString());
+		Assert.assertTrue(res.isSucceeded());
+		
+
+		res = client.execute(new Index.Builder(this
+				.loadFile("test_fr_idonly.json"))
+				.index("securityconfiguration").type("fieldresponsefilter")
+				.id("fieldresponsefilter").refresh(true).build());
+
+		Assert.assertTrue(res.isSucceeded());
+
+		res = client.execute(new Search.Builder(this
+				.loadFile("non_field_query.json"))
+				.refresh(true)
+				.setHeader("X-Forwarded-For",
+						"3.1.55.2, 123.123.123.123").build());
 		this.log.info(res.getJsonString());
 		Assert.assertTrue(res.isSucceeded());
 
