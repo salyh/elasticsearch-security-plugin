@@ -2,6 +2,8 @@ elasticsearch-security-plugin
 =============================
 This plugins adds security functionality to elasticsearch in kind of separate modules.
 
+[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
+
 As of now two security modules are implemented:
 * Restrict actions against elasticsearch on IP-Address basis (actionpathfilter)
 * Limit fields which will be returned on IP-Address basis (fieldresponsefilter)
