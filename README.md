@@ -51,7 +51,7 @@ The security rules for each module are stored in an index ``securityconfiguratio
 			 	
 			 	{
 				 	"hosts" : [ "8.8.8.8" ],
-				 	"indices" :[ "testindex1,testindex2" ],
+				 	"indices" :[ "testindex1","testindex2" ],
 				 	"permission" : "READWRITE"
 			 	},
 			 	
@@ -89,13 +89,13 @@ Permissions:
 			 	
 			 	{
 				 	"hosts" : [ "39.18.22.8" ],
-				 	"indices" :[ "testindex1,testindex2" ],
+				 	"indices" :[ "testindex1","testindex2" ],
 				 	"fields" : "name,user,_id"
 			 	},
 			 	
 			 	{
 				 	"hosts" : [ "132.*.6.*,122.44.123.14,*google.de,192.168.1.*" ],
-				 	"indices" :[ "testindex1,textindex3,myindex" ],
+				 	"indices" :[ "testindex1","textindex3","myindex" ],
 				 	"fields" : "timestamp,my.field.name,street,plz"
 			 	}
 			 ]		 		 
