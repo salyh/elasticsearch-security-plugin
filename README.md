@@ -1,21 +1,27 @@
 elasticsearch-security-plugin
 =============================
-This plugins adds security functionality to elasticsearch in kind of separate modules.
+This plugin adds http/rest security functionality to Elasticsearch in kind of separate modules.
+Instead of Netty a embedded Tomcat 7 is used to process http/rest requests. 
 
-[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
+Currently for user based authentication and authorization 
+Kerberos and NTLM are supported through 3rd party library waffle (only on windows servers). 
+For UNIX servers Kerberos is supported through 3rd party library tomcatspnegoad (Works with any kerberos implementation. For authorization either Active Directory and generic LDAP is supported).
+
+You can use this plugin also without Kerberos/NTLM but then only host based authentication is available.
+<!--
+[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)-->
 
 As of now two security modules are implemented:
-* Restrict actions against elasticsearch on IP-Address basis (actionpathfilter)
-* Limit fields which will be returned on IP-Address basis (fieldresponsefilter)
-
+* Actionpathfilter: Restrict actions against Elasticsearch on a coarse-grained level like who is allowed to to READ, WRITE or even ADMIN rest api calls
+* Document level security (dls): Restrict actions on document level like who is allowed to query for which fields within a document
 
 <h3>Installation</h3>
 
 Windows:
-``plugin.bat --url http://goo.gl/1JwMKw --install elasticsearch-security-plugin-0.0.1.Beta1``
+``plugin.bat --url http://... --install elasticsearch-security-plugin-0.0.1.Beta2``
 
 UNIX:
-``plugin --url http://goo.gl/1JwMKw  --install elasticsearch-security-plugin-0.0.1.Beta1``
+``plugin --url http://... --install elasticsearch-security-plugin-0.0.2.Beta2``
 
 
 
@@ -23,103 +29,138 @@ UNIX:
 
 <h4>Configuration (elasticsearch.yml)</h4>
 Enable the security plugin
-* ``http.type: org.elasticsearch.plugins.security.http.netty.NettyHttpServerTransportModule``
+* ``http.type: org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerTransportModule``
+* ``http.port: 8080`` Define exactly one port, Port ranges are not permitted
+
+Setup kerberos
+* ``security.kerberosimpl: waffle|spnegoad|none`` Kerberos implementation
+
+If you use not spnegoad then you must provide the following configuration parameters:
+* ``security.spnegoad.ldapurls: ldap://myldaphost:389`` Ldap Server
+* ``security.spnegoad.isactivedirectory: true`` true if your ldap server is AD, false otherwise
+* ``security.spnegoad.login.conf.path: c:\path\to\login.conf`` JAAS login modules configuration
+* ``security.spnegoad.krb5.conf.path: /path/to/krb5.conf`` Kerberos configuration file
+
+If you use spnegoad and not Active Directory you may want configure your LDAP layout
+* ``security.spnegoad.ldap.usersearchbase: ""`` (Default is Root DSE)
+* ``security.spnegoad.ldap.usersearchpattern: Default is (&(objectClass=krb5principal) (krb5PrincipalName={0}))`` 0=fullqualified kerberos principal, 1=short kerberos principal
+* ``security.spnegoad.ldap.groupssearchbase: ""`` (Default is Root DSE)
+* ``security.spnegoad.ldap.groupssearchpattern: Default is (&(objectClass=groupofnames)(member={0}))`` 0=DN of user, 1=fullqualified kerberos principal, 2=short kerberos principal
+* ``security.spnegoad.ldap.rolenameattribute: cn`` (Default is cn)
 
 Optionally enable XFF 
 * ``security.http.xforwardedfor.header: X-Forwarded-For`` Enable XFF
-* ``security.http.xforwardedfor.trustedproxies: <List of proxy ip's>`` Example: 192.168.1.1, 31.122.45.1, 193.54.55.21
+* ``security.http.xforwardedfor.trustedproxies: <List of proxy ip's>`` Example: "192.168.1.1,31.122.45.1,193.54.55.21"
 * ``security.http.xforwardedfor.enforce: true`` Enforce XFF header, default: false
 
-<h4>Configuration (security rules)</h4>
-The security rules for each module are stored in an index ``securityconfiguration``.
+Enable at least one of the two security modules 
+* ``security.module.actionpathfilter.enabled: true``
+* ``security.module.dls.enabled: true``
 
-<b>Example: Configure 'Restrict actions against elasticsearch on IP-Address basis (actionpathfilter)' module</b>
+<h4>Configuration (security rules)</h4>
+The security rules for each module are stored in an special index ``securityconfiguration``.
+For security reasons you can access this index only from localhost (127.0.0.1).
+
+<b>Example: Configure 'Restrict actions against elasticsearch on IP-Address only basis (actionpathfilter)' module. This work's without Kerberos/NTLM but maybe require XFF to be configured properly.</b>
 <pre><code>$ curl -XPUT 'http://localhost:9200/securityconfiguration/actionpathfilter/actionpathfilter' -d '
 {
 			 "rules": [
 			 	{
-				 	"hosts" : [ "*" ],
-				 	"indices" :[ "*" ],
 				 	"permission" : "ALL"
 			 	},
 			 	
 			 	{
 				 	"hosts" : [ "google-public-dns-a.google.com" ],
-				 	"indices" :[ "*"],
+				 	"indices" : [ "*"],
+				 	"types" : [ "twitter","facebook" ],
 				 	"permission" : "NONE"
 			 	},
 			 	
 			 	{
 				 	"hosts" : [ "8.8.8.8" ],
-				 	"indices" :[ "testindex1","testindex2" ],
+				 	"indices" : [ "testindex1","testindex2" ],
+				 	"types" : [ "*" ],
 				 	"permission" : "READWRITE"
 			 	},
 			 	
 			 	{
 				 	"hosts" : [ "81.*.8.*","2.44.12.14","*google.de","192.168.*.*" ],
-				 	"indices" :[ "testindex1" ],
+				 	"indices" : [ "testindex1" ],
+				 	"types" : [ "quotes" ],
 				 	"permission" : "READONLY"
 			 	}
 			 ]		 		 
 }'</code></pre>
 
-Permissions:
-* ALL: No restrictions
-* READWRITE: No admin actions but read write operations allowed
-* READONLY: No admin and no write actions allowed (but read actions)
-* NONE: No action allowd (also read actions will be denied)
-
-
-
-<b>Example: Configure 'Limit fields which will be returned on IP-Address basis (fieldresponsefilter)' module</b>
-<pre><code>$ curl -XPUT 'http://localhost:9200/securityconfiguration/fieldresponsefilter/fieldresponsefilter' -d '
+<b>Example: Configure 'Restrict actions against elasticsearch on user/role and ip/hostname basis (actionpathfilter)' module. This needs Kerberos/NTLM.</b>
+<pre><code>$ curl -XPUT 'http://localhost:9200/securityconfiguration/actionpathfilter/actionpathfilter' -d '
 {
 			 "rules": [
 			 	{
+			 		
+				 	"users" : [ "*" ],
+				 	"roles" : [ "*" ],
 				 	"hosts" : [ "*" ],
-				 	"indices" :[ "*" ],
-				 	"fields" : "_id"
+				 	"indices" : [ "*" ],
+				 	"types" : [ "*" ],
+				 	"permission" : "ALL"
 			 	},
 			 	
 			 	{
-				 	"hosts" : [ "*mycompany.com" ],
-				 	"indices" :[ "*"],
-				 	"fields" : "*"
+			 		"users" : [ "spock","kirk" ],
+				 	"roles" : [ "admin" ],
+				 	"hosts" : [ "*" ],
+				 	"indices" : [ "*"],
+				 	"types" : [ "twitter","facebook" ],
+				 	"permission" : "NONE"
 			 	},
 			 	
 			 	{
-				 	"hosts" : [ "39.18.22.8" ],
-				 	"indices" :[ "testindex1","testindex2" ],
-				 	"fields" : "name,user,_id"
+			 	
+			 		"users" : [ "bowna" ],
+				 	"roles" : [ "*" ],
+				 	"hosts" : [ "*" ],
+				 	"indices" : [ "testindex1","testindex2" ],
+				 	"types" : [ "*" ],
+				 	"permission" : "READWRITE"
 			 	},
 			 	
 			 	{
-				 	"hosts" : [ "132.*.6.*","122.44.123.14","*google.de","192.168.1.*" ],
-				 	"indices" :[ "testindex1","textindex3","myindex" ],
-				 	"fields" : "timestamp,my.field.name,street,plz"
+			 		"users" : [ "smithf","salyh" ],
+				 	"roles" : [ "users","guests" ],
+				 	"hosts" : [ "81.*.8.*","2.44.12.14","*google.de","192.168.*.*" ],
+				 	"indices" : [ "testindex1" ],
+				 	"types" : [ "quotes" ],
+				 	"permission" : "READONLY"
 			 	}
 			 ]		 		 
 }'</code></pre>
 
-Fields:
-* List of fields (comma separated) which will be returned for a POST \_search/\_msearch query
 
+Permissions:
+* ALL: No restrictions
+* READWRITE: No admin actions but read write operations allowed (for example _settings, _status, _cluster)
+* READONLY: No admin and no write actions allowed (but read actions) (for example _update, _bulk, _mapping)
+* NONE: No action allowed (also read actions will be denied) (even _search and _msearch are denied)
 
 In a more formal way the configuration looks like:
 
 * Format is JSON
 * One top level array named "rules"
-* The single wildchar character (\*) match any host or any index
-* In hostnames or ip's you can use the wildchar character (\*) for specifing subnets
+* The single wildchar character (\*) match any user, role, host, type or any index
+* In hostnames or ip's you can use the wildcard character (\*) for specifying subnets
 * The rules elemens look like:
 
 <pre><code>
 
 
 			 	{
+			 		"users" : [ &lt;* or list of users/principals for which this rule apply&gt; ],
+			 		"roles" : [ &lt;* or list of AD roles for which this rule apply&gt; ],
 				 	"hosts" : [ &lt;* or list of hostnames/ip's for which this rule apply&gt; ],
+				 	"types" :[ &lt;* or list of types for which this rule apply&gt; ],
 				 	"indices" :[ &lt;* or list of indices for which this rule apply&gt; ],
-				 	"&lt;qualification name\>" : &lt;qualification string&gt;
+				 	"permission" : "ALL"&#448;"READWRITE"&#448;"READONLY"&#448;"NONE";
 			 	}
 			 	
 </code></pre>
@@ -130,12 +171,197 @@ In a more formal way the configuration looks like:
 
 
 			 	{
-				 	"hosts" : [ "*" ],
-				 	"indices" :[ "*" ],
+				 	
 				 	"&lt;qualification name\>" : &lt;qualification string&gt;
 			 	}
 			 	
 </code></pre>
 
-* I more than one rule match then the last one (right down at the bottom of the security config) is used
+* If more than one rule match then the first one (right down at the top of the security config) is used
 
+
+<b>Example: Configure 'Limit fields which will be returned on IP-Address basis (document level security)' module</b>
+This work a little bit different then the actionpathfilter. First you have to configure a default for all documents which do not contain document level security informations. 
+<pre><code>$ curl -XPUT 'http://localhost:9200/securityconfiguration/dlspermissions/default' -d '
+{
+			 "dlspermissions":
+				{
+					"*" : 
+									{
+										"read" :["dlstoken1","t_powerusers","t_office","t_admin"],
+										"update" : ["t_office","t_admin"],
+										"delete" : []
+									}
+					
+													
+				}				 
+}'</code></pre>
+The above means that every field ("*") in a document which has document level security associated can be read by those who have obtained one of the listed dls tokens (in this example: "dlstoken1","t_powerusers","t_office","t_admin"),
+every field can be updated by those with the tokens "t_office","t_admin" and every field can be deleted by no one (empty token array).
+
+Another example could be:
+<pre><code>$ curl -XPUT 'http://localhost:9200/securityconfiguration/dlspermissions/default' -d '
+{
+			 "dlspermissions":
+				{
+					"*" : 
+									{
+										"read" :["t_admin"],
+										"update" : [],
+										"delete" : []
+									},
+									
+					"qoutes.account.*" : 
+									{
+										"read" :["t_office","t_admin"],
+										"update" : ["t_office","t_admin"],
+										"delete" : []
+									},
+									
+					"customers.*" : 
+									{
+										"read" :["*"],
+										"update" : ["*"],
+										"delete" : ["*"]
+									}
+					
+													
+				}				 
+}'</code></pre>
+The above means that every field ("*") in a document which has document level security associated can be read by those who have obtained the "t_admin" token. Updates and deletes are not permitted.
+All fields matching "qoutes.account.*" can be read and updated by those who have obtained the "t_office" or "t_admin" token.
+All fields matching "customers.*" can be read, updated and deleted by any one.
+
+If a document contains document level security information those will be applied instead of the default. An example for such a document could be:
+<pre><code>$ curl -XPUT 'http://localhost:9200/finacial/qoutes/Id-12345' -d '
+{
+
+			"company" : "Hewlett Packard",
+			"street" : "Packard Bell Road 1",
+			"zip" : "12345",
+			
+			
+			"customers":{
+							"Apple":{
+										"street" : "infinite loop"
+									},
+									
+							"Microsoft":{
+										"street" : "One Microsoft Way"
+									}
+			
+						}
+			
+			
+			"qoutes": {
+						"quoteid" : "QO-7776-U",
+						"amount" : 300000,
+						"account" : {
+										"name" : "Demo Ltd.",
+										"classification" : "A",
+										"tickersymbol" : "AAOL"
+									}
+					}	
+
+
+
+			 "dlspermissions":
+				{
+					"*" : 
+									{
+										"read" :["t_admin"],
+										"update" : [],
+										"delete" : []
+									},
+									
+					"qoutes.account.*" : 
+									{
+										"read" :["t_office","t_admin"],
+										"update" : ["t_office","t_admin"],
+										"delete" : []
+									},
+									
+					"customers.*" : 
+									{
+										"read" :["*"],
+										"update" : ["*"],
+										"delete" : ["*"]
+									}
+					
+													
+				}
+				
+				
+				
+							 
+}'</code></pre>
+
+How to obtain a dls (document level security) token? It works very similar to the actionpathfilter:
+<pre><code>$ curl -XPUT 'http://localhost:9200/securityconfiguration/dlspermissions/dlspermissions' -d '
+{
+			 "rules": [
+			 	{
+			 		
+				 	"users" : [ "*" ],
+				 	"roles" : [ "*" ],
+				 	"hosts" : [ "*" ],
+				 	"indices" : [ "*" ],
+				 	"types" : [ "*" ],
+				 	"dlstoken" : [ ]
+			 	},
+			 	
+			 	{
+			 		"users" : [ "spock","kirk" ],
+				 	"roles" : [ "admin" ],
+				 	"hosts" : [ "*" ],
+				 	"indices" : [ "*"],
+				 	"types" : [ "twitter","facebook" ],
+				 	"dlstoken" : [ "t_office","t_admin" ]
+			 	},
+			 	
+			 	{
+			 	
+			 		"users" : [ "bowna" ],
+				 	"roles" : [ "*" ],
+				 	"hosts" : [ "*" ],
+				 	"indices" : [ "testindex1","testindex2" ],
+				 	"types" : [ "*" ],
+				 	"dlstoken" : [ "t_office","t_admin" ]
+			 	},
+			 	
+			 	{
+			 		"users" : [ "smithf","salyh" ],
+				 	"roles" : [ "users","guests" ],
+				 	"hosts" : [ "81.*.8.*","2.44.12.14","*google.de","192.168.*.*" ],
+				 	"indices" : [ "testindex1" ],
+				 	"types" : [ "quotes" ],
+				 	"dlstoken" : [ "t_office","t_admin" ]
+			 	}
+			 ]		 		 
+}'</code></pre>
+
+
+Who i am:<br>
+"users" : [...], if * or not present match always, if empty match always, OR<br>
+"roles" : [...], if * or not present match always, if empty match always, OR<br>
+"hosts" : [...], if * or not present match always, if empty match always, OR<br>
+<br><br>
+On what i am operating<br>
+"indices" : [...], if * or not present match always, if empty match always, OR<br>
+"types": [...], if * or not present match always, if empty match always, OR<br>
+<br><br>
+What i am allowed to do/see/whatever when above match, if so then stop here and do not evaluate other rules (first one wins)<br>
+"permission" : "READWRITE"<br>
+
+All present attributes (users, roles, hosts, indices, types) must match, if not this rule will not be applied and the next one is evaluated.
+If no rule matches the default rule will be applied.<br><br>
+"users" : [u1,u2]<br>
+"roles" : [role1, role2]<br>
+"hosts" : [host1, host2]<br>
+<br><br>
+"indices" : [i1,i2]<br>
+"types": [t1, t2]<br>
+<br><br>
+This rule match if (the user is u1 or u2) and (has the role rol1 or role2) <br>
+and (issues the request from host1 or host2) and (operates on i1 or i2 or both)<br>
+and uses (documents of types t1 or t2 or both)<br>

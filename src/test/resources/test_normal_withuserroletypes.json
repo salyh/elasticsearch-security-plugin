@@ -1,0 +1,40 @@
+{
+			 "rules": [
+			 	{
+				 	"permission" : "READONLY"
+			 	},
+			 	{
+				 	
+				 	"roles" : ["batmanrole"],				 	
+				 	"indices" :["testindex1","testindex2" ],
+				 	"types" : ["secrettype"],
+				 	"permission" : "READWRITE"
+			 	},
+			 	{
+				 	
+				 	"roles" : ["batmanrole"],				 	
+				 	"indices" :["testindex3" ],				 	
+				 	"permission" : "NONE"
+			 	},
+			 	{
+				 	"users" : ["robin"],	 	
+				 	"permission" : "ALL"
+			 	},
+			 	{				 	
+				 	"hosts" : ["8.8.8.*"],
+				 	"permission" : "ALL"
+			 	},
+			 	{
+				 	
+				 	"hosts" : ["9.9.*.*"],
+				 	"indices" :["testindex1","testindex2" ],
+				  	"permission" : "NONE"
+			 	},
+			 	{
+				 	"users" : ["kirk","spock"],				 	
+				 	"indices" :["testindex1","testindex2" ],
+				 	"permission" : "READWRITE"
+			 	}
+			 ]		 		 
+}
+

@@ -1,0 +1,49 @@
+{				
+	"dlspermissions":
+				{
+					"*" : 
+									{
+										"read" :[],
+										"update" : [],
+										"delete" : []
+									},
+					
+					"message" : 
+									{
+										"read" :[ "guesttoken" ],
+										"update" : [ "guesttoken","admin"],
+										"delete" : []
+									},	
+
+					"payload.level_12.*" : 
+									{
+										"read" :[ "guesttoken" ],
+										"update" : [ "guesttoken","admin"],
+										"delete" : []
+									}										
+				},
+
+    "twitteruser" : "olomo1",
+    "post_date" : "2013-11-15T14:12:12",
+    "message" : "playing with updated docs",
+	"payload" : {
+					"level_1":"hello_level_1",
+					"level_12":
+						{
+								"level_2":[
+								
+								{
+									"min":"a",
+									"max":"b"
+								},
+								{
+									"min":"c",
+									"max":"d"
+								}
+								
+								
+								]
+						}
+				
+				}
+}

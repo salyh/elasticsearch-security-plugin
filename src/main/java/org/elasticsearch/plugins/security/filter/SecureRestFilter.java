@@ -2,12 +2,12 @@ package org.elasticsearch.plugins.security.filter;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.List;
 
-import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerRestChannel;
+import org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerRestRequest;
 import org.elasticsearch.plugins.security.service.SecurityService;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
 import org.elasticsearch.rest.RestChannel;
@@ -20,8 +20,6 @@ public abstract class SecureRestFilter extends RestFilter {
 
 	protected final ESLogger log = Loggers.getLogger(this.getClass());
 
-	protected final String xForwardFor = "X-Forwarded-For";
-
 	protected SecurityService securityService;
 
 	protected SecureRestFilter(final SecurityService securityService) {
@@ -29,59 +27,23 @@ public abstract class SecureRestFilter extends RestFilter {
 		this.securityService = securityService;
 	}
 
-	protected static String[] BUILT_IN_ADMIN_COMMANDS = new String[] {
-			"_cluster", "_settings", "_close", "_open", "_template", "_status",
-			"_stats", "_segments", "_cache", "_gateway", "_optimize", "_flush",
-			"_warmer", "_refresh", "_cache", "_shutdown", "_nodes" };
-	protected static String[] BUILT_IN_WRITE_COMMANDS = new String[] {
-			"_update", "_bulk", "_mapping", "_aliases", "_analyze" };
-	protected static String[] BUILT_IN_READ_COMMANDS = new String[] {
-			"_search", "_msearch" };
-
 	protected InetAddress getClientHostAddress(final RestRequest request)
 			throws UnknownHostException {
 
 		final InetAddress hostAddress = this.securityService
 				.getHostAddressFromRequest(request);
-		this.log.debug("Client IP: " + hostAddress);
+
 		return hostAddress;
-	}
-
-	protected List<String> getIndices(final RestRequest request) {
-		String[] indices = new String[0];
-		final String path = request.path();
-
-		this.log.info("Evaluate decoded path '" + path + "'");
-
-		if (!path.startsWith("/")) {
-
-			return null;
-		}
-
-		if (path.length() > 1) {
-
-			int endIndex;
-
-			if ((endIndex = path.indexOf('/', 1)) != -1) {
-				indices = Strings.splitStringByCommaToArray(path.substring(1,
-						endIndex));
-
-			}
-		}
-
-		this.log.debug("Indices: " + Arrays.toString(indices));
-		return Arrays.asList(indices);
-
 	}
 
 	@Override
 	public final void process(final RestRequest request,
 			final RestChannel channel, final RestFilterChain filterChain) {
 
-		final List<String> indices = this.getIndices(request);
-		if (indices.size() == 1
-				&& indices.get(0).equals(
-						this.securityService.getSecurityConfigurationIndex())) {
+		// TODO check aliases, multiple indices, _all, ...
+		final List<String> indices = SecurityUtil.getIndices(request);
+		if (indices.contains(this.securityService
+				.getSecurityConfigurationIndex())) {
 
 			try {
 				if (this.getClientHostAddress(request).getHostAddress()
@@ -96,14 +58,20 @@ public abstract class SecureRestFilter extends RestFilter {
 						RestStatus.INTERNAL_SERVER_ERROR, e.toString());
 			}
 		} else {
-			this.processSecure(request, channel, filterChain);
+
+			((TomcatHttpServerRestRequest) request).getUserRoles();
+
+			this.processSecure((TomcatHttpServerRestRequest) request,
+					(TomcatHttpServerRestChannel) channel, filterChain);
 
 		}
 
 	}
 
-	protected abstract void processSecure(final RestRequest request,
-			final RestChannel channel, final RestFilterChain filterChain);
+	protected abstract void processSecure(
+			final TomcatHttpServerRestRequest request,
+			final TomcatHttpServerRestChannel channel,
+			final RestFilterChain filterChain);
 
 	protected abstract String getType();
 

@@ -1,0 +1,13 @@
+{
+			"dlspermissions":
+				{
+					"*" : 
+									{
+										"read" :["*"],
+										"update" : ["*"],
+										"delete" : ["*"]
+									}
+					
+													
+				}		 
+}

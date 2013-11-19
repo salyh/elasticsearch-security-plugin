@@ -4,7 +4,7 @@
 
 	<groupId>com.github.salyh.elasticsearch</groupId>
 	<artifactId>elasticsearch-security-plugin</artifactId>
-	<version>0.0.1.Beta1</version>
+	<version>0.0.2.Beta2</version>
 	<packaging>jar</packaging>
 
 	<name>elasticsearch-security-plugin</name>
@@ -13,7 +13,9 @@
 	<inceptionYear>2013</inceptionYear>
 
 	<properties>
-		<elasticsearch.version>0.90.5</elasticsearch.version>
+		<elasticsearch.version>0.90.6</elasticsearch.version>
+		<tomcat.version>7.0.47</tomcat.version>
+		<apache.ds.version>2.0.0-M15</apache.ds.version>
 	</properties>
 
 	<licenses>
@@ -79,7 +81,7 @@
 			<groupId>com.github.tlrx</groupId>
 			<artifactId>elasticsearch-test</artifactId>
 			<!-- <version>${elasticsearch.version}</version> -->
-			<version>0.90.5</version>
+			<version>${elasticsearch.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -88,13 +90,12 @@
 			<artifactId>elasticsearch</artifactId>
 			<version>${elasticsearch.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
-			<scope>test</scope>
-			<optional>true</optional>
+			
 		</dependency>
 
 		<dependency>
@@ -133,7 +134,88 @@
 			<version>4.3</version>
 			<scope>test</scope>
 		</dependency>
+<!--
+<dependency>
+		<groupId>org.codehaus.jackson</groupId>
+		<artifactId>jackson-mapper-asl</artifactId>
+		<version>1.9.13</version>
+	</dependency>
+		<dependency> <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-auth</artifactId> 
+			<version>2.2.0</version> </dependency> -->
 
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
+			<version>${tomcat.version}</version>
+		</dependency>
+		<!-- <dependency> <groupId>org.apache.tomcat.embed</groupId> <artifactId>tomcat-embed-logging-juli</artifactId> 
+			<version>${tomcat.version}</version> </dependency> -->
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-logging-log4j</artifactId>
+			<version>${tomcat.version}</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>com.github.dblock.waffle</groupId>
+			<artifactId>waffle-tomcat7</artifactId>
+			<version>1.5</version>
+		</dependency>
+		
+		<dependency>
+  <groupId>net.sf.michael-o.tomcat</groupId>
+  <artifactId>tomcat-authnz-spnego-ad-tc7</artifactId>
+  <version>0.9.1</version>
+</dependency>
+		
+		<dependency>
+    <groupId>com.jayway.jsonpath</groupId>
+    <artifactId>json-path</artifactId>
+    <version>0.9.0</version>
+</dependency>
+
+<dependency>
+    <groupId>com.jayway.jsonpath</groupId>
+    <artifactId>json-path-assert</artifactId>
+    <version>0.9.0</version>
+    <scope>test</scope>
+</dependency>
+
+<dependency>
+    <groupId>net.sourceforge.spnego</groupId>
+    <artifactId>spnego</artifactId>
+    <version>7.0</version>
+    <scope>test</scope>
+</dependency>
+
+
+
+<dependency>
+			<groupId>org.apache.directory.server</groupId>
+			<artifactId>apacheds-all</artifactId>
+			<version>${apache.ds.version}</version>
+			<exclusions>
+				<!-- exclude additional LDIF schema files to avoid conflicts through 
+					multiple copies -->
+				<exclusion>
+					<groupId>org.apache.directory.shared</groupId>
+					<artifactId>shared-ldap-schema</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.apache.directory.api</groupId>
+					<artifactId>api-ldap-schema-data</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+<dependency>
+	<groupId>org.apache.directory.server</groupId>
+	<artifactId>kerberos-client</artifactId>
+<version>${apache.ds.version}</version>
+</dependency>
+            
+            
 
 	</dependencies>
 
@@ -156,7 +238,7 @@
 			</testResource>
 		</testResources>
 
-		<plugins>		
+		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -258,5 +340,14 @@
 			<name>Sonatype Releases Repository</name>
 			<url>http://oss.sonatype.org/content/repositories/releases</url>
 		</repository>
+		
+		
+    <repository>
+      <id>jspresso</id>
+      <url>http://repository.jspresso.org/maven2/</url>
+    </repository>
+ 
+		
+		
 	</repositories>
 </project>

@@ -1,0 +1,21 @@
+{
+			 "rules": [
+			 	{				 	
+				 	"dlstoken" : [ "default,everyone" ]
+			 	},
+			 	{
+				 	"users" : [ "Guest" ],				 	
+				 	"dlstoken" : [ "guesttoken" ]
+			 	},
+			 	{
+				 	"roles" : [ "admin","marketing" ],				 	
+				 	"dlstoken" : [ "abstracttoken1,tokenx" ]
+			 	}
+				,
+			 	{
+				 	"roles" : [ "admin","marketing" ],		
+					"types"	: ["type1","type2"],				
+				 	"dlstoken" : [ "abstracttoken1,tokenx" ]
+			 	}
+			 ]		 		 
+}

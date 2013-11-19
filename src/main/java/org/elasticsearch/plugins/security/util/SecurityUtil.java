@@ -1,12 +1,20 @@
 package org.elasticsearch.plugins.security.util;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.util.Arrays;
+import java.util.List;
 
+import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestRequest;
+import org.elasticsearch.rest.RestRequest.Method;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.rest.XContentRestResponse;
 import org.elasticsearch.rest.XContentThrowableRestResponse;
@@ -17,6 +25,173 @@ public class SecurityUtil {
 	private static final ESLogger log = Loggers.getLogger(SecurityUtil.class);
 
 	private SecurityUtil() {
+
+	}
+
+	public static boolean setSystemPropertyToAbsoluteFilePathFromClassPath(
+			final String property, final String fileNameFromClasspath) {
+		if (System.getProperty(property) == null) {
+			File jaasConfigFile = null;
+			final URL jaasConfigURL = SecurityUtil.class.getClassLoader()
+					.getResource(fileNameFromClasspath);
+			if (jaasConfigURL != null) {
+				try {
+					jaasConfigFile = new File(URLDecoder.decode(
+							jaasConfigURL.getFile(), "UTF-8"));
+				} catch (final UnsupportedEncodingException e) {
+					return false;
+				}
+
+				if (jaasConfigFile.exists() && jaasConfigFile.canRead()) {
+					System.setProperty(property,
+							jaasConfigFile.getAbsolutePath());
+
+					log.info("Load " + fileNameFromClasspath + " from {} ",
+							jaasConfigFile.getAbsolutePath());
+					return true;
+				} else {
+					log.error(
+							"Cannot read from {}, maybe the file does not exists? ",
+							jaasConfigFile.getAbsolutePath());
+				}
+
+			} else {
+				log.error("Failed to load " + fileNameFromClasspath);
+			}
+		} else {
+			log.warn("Property " + property + " already set to "
+					+ System.getProperty(property));
+		}
+
+		return false;
+	}
+
+	public static boolean setSystemPropertyToAbsoluteFile(
+			final String property, final String fileName) {
+		if (System.getProperty(property) == null) {
+
+			if (fileName == null) {
+				log.error("Cannot set property " + property
+						+ " because filename is null");
+
+				return false;
+			}
+
+			final File jaasConfigFile = new File(fileName).getAbsoluteFile();
+
+			if (jaasConfigFile.exists() && jaasConfigFile.canRead()) {
+				System.setProperty(property, jaasConfigFile.getAbsolutePath());
+
+				log.info("Load " + fileName + " from {} ",
+						jaasConfigFile.getAbsolutePath());
+				return true;
+			} else {
+				log.error(
+						"Cannot read from {}, maybe the file does not exists? ",
+						jaasConfigFile.getAbsolutePath());
+			}
+
+		} else {
+			log.warn("Property " + property + " already set to "
+					+ System.getProperty(property));
+		}
+
+		return false;
+	}
+
+	public static List<String> getIndices(final RestRequest request) {
+		String[] indices = new String[0];
+		final String path = request.path();
+		// TODO all indices , length=0
+		log.debug("Evaluate decoded path for indices'" + path + "'");
+
+		if (!path.startsWith("/")) {
+
+			return null;
+		}
+
+		if (path.length() > 1) {
+
+			int endIndex;
+
+			if ((endIndex = path.indexOf('/', 1)) != -1) {
+				indices = Strings.splitStringByCommaToArray(path.substring(1,
+						endIndex));
+
+			}
+		}
+
+		log.debug("Indices: " + Arrays.toString(indices));
+		return Arrays.asList(indices);
+
+	}
+
+	public static String getId(final RestRequest request) {
+
+		String id = null;
+		final String path = request.path();
+
+		log.debug("Evaluate decoded path for id '" + path + "'");
+
+		if (!path.startsWith("/")) {
+
+			return null;
+		}
+
+		if (path.length() > 1) {
+
+			int endIndex;
+
+			if ((endIndex = path.lastIndexOf('/')) != -1) {
+				id = path.substring(endIndex + 1);
+
+				if (id.contains("?")) {
+					id = path.substring(id.indexOf("?") + 1);
+
+				}
+
+				// if(id.contains("/")) return null;
+
+			}
+		}
+
+		log.debug("Id: " + id);
+		return id;
+
+	}
+
+	public static List<String> getTypes(final RestRequest request) {
+		String[] types = new String[0];
+		final String path = request.path();
+
+		// TODO all types, length=0 or _all ??
+		// TODO aliases indeices get expanded before or after rest layer?
+		log.debug("Evaluate decoded path for types '" + path + "'");
+
+		if (!path.startsWith("/")) {
+
+			return null;
+		}
+
+		if (path.length() > 1) {
+
+			int endIndex;
+
+			if ((endIndex = path.indexOf('/', 1)) != -1) {
+
+				int endType;
+
+				if ((endType = path.indexOf('/', endIndex + 1)) != -1) {
+
+					types = Strings.splitStringByCommaToArray(path.substring(
+							endIndex + 1, endType));
+				}
+
+			}
+		}
+
+		log.debug("Types: " + Arrays.toString(types));
+		return Arrays.asList(types);
 
 	}
 
@@ -46,4 +221,61 @@ public class SecurityUtil {
 		}
 	}
 
+	public static String[] BUILT_IN_ADMIN_COMMANDS = new String[] { "_cluster",
+			"_settings", "_close", "_open", "_template", "_status", "_stats",
+			"_segments", "_cache", "_gateway", "_optimize", "_flush",
+			"_warmer", "_refresh", "_shutdown", "_nodes" };
+	public static String[] BUILT_IN_WRITE_COMMANDS = new String[] { "_create",
+			"_update", "_bulk", "_mapping", "_aliases", "_analyze" };
+	public static String[] BUILT_IN_READ_COMMANDS = new String[] { "_search",
+			"_msearch" };
+
+	private static boolean stringContainsItemFromListAsCommand(
+			final String inputString, final String[] items) {
+
+		for (int i = 0; i < items.length; i++) {
+			if (inputString.contains("/" + items[i])
+					&& !inputString.contains(items[i] + "/")) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public static boolean stringContainsItemFromListAsTypeOrIndex(
+			final String inputString, final String[] items) {
+		for (int i = 0; i < items.length; i++) {
+			if (inputString.contains("/" + items[i] + "/")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean isWriteRequest(final RestRequest request) {
+		if (request.method() == Method.DELETE || request.method() == Method.PUT) {
+			return true;
+		}
+
+		if (request.method() == Method.POST) {
+			if (!stringContainsItemFromListAsCommand(request.path(),
+					BUILT_IN_READ_COMMANDS)) {
+				return true;
+			}
+		}
+
+		return stringContainsItemFromListAsCommand(request.path(),
+				BUILT_IN_WRITE_COMMANDS);
+	}
+
+	public static boolean isAdminRequest(final RestRequest request) {
+		return stringContainsItemFromListAsCommand(request.path(),
+				BUILT_IN_ADMIN_COMMANDS);
+	}
+
+	public static boolean isReadRequest(final RestRequest request) {
+		return !isWriteRequest(request) && !isAdminRequest(request);
+	}
 }

@@ -1,24 +1,38 @@
 package org.elasticsearch.plugins.security.service;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+
 import org.elasticsearch.ElasticSearchException;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentHelper;
+import org.elasticsearch.plugins.security.MalformedConfigurationException;
 import org.elasticsearch.plugins.security.filter.ActionPathFilter;
-import org.elasticsearch.plugins.security.filter.FieldResponseFilter;
-import org.elasticsearch.plugins.security.http.HttpRequest;
+import org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerRestRequest;
+import org.elasticsearch.plugins.security.service.permission.DlsPermission;
 import org.elasticsearch.rest.RestController;
 import org.elasticsearch.rest.RestRequest;
 
+import com.jayway.jsonpath.JsonPath;
+
 public class SecurityService extends
 		AbstractLifecycleComponent<SecurityService> {
+
+	public Settings getSettings() {
+		return this.settings;
+	}
 
 	private final static String DEFAULT_SECURITY_CONFIG_INDEX = "securityconfiguration";
 	private final String securityConfigurationIndex;
@@ -39,13 +53,29 @@ public class SecurityService extends
 
 	}
 
+	public Client getClient() {
+		return this.client;
+	}
+
 	@Override
 	protected void doStart() throws ElasticSearchException {
 
-		this.restController.registerFilter(new ActionPathFilter(this));
-		this.restController.registerFilter(new FieldResponseFilter(this));
-		this.logger.debug("security.configuration.index="
-				+ this.securityConfigurationIndex);
+		// TODO order
+
+		final Boolean enableActionPathFilter = this.settings.getAsBoolean(
+				"security.module.actionpathfilter.enabled", true);
+
+		if (enableActionPathFilter != null
+				&& enableActionPathFilter.booleanValue()) {
+			this.restController.registerFilter(new ActionPathFilter(this));
+		}
+
+		// this.restController
+		// .registerFilter(new FieldLevelPermissionFilter(this));
+		// this.restController.registerFilter(new FieldResponseFilter(this));
+
+		// this.logger.debug("security.configuration.index="
+		// + this.securityConfigurationIndex);
 
 		// TODO disable dynamic scripting for this node
 		// https://github.com/yakaz/elasticsearch-action-reloadsettings/blob/master/src/main/java/org/elasticsearch/action/reloadsettings/ESInternalSettingsPerparer.java
@@ -61,14 +91,36 @@ public class SecurityService extends
 
 	@Override
 	protected void doClose() throws ElasticSearchException {
-		this.logger.debug("doClose())");
+		this.logger.debug("doClose");
 
 	}
 
-	public String getXContentConfiguration(final String type, final String id) {
-		return this.client
+	public String getXContentSecurityConfiguration(final String type,
+			final String id) throws IOException,
+			MalformedConfigurationException {
+		try {
+			return XContentHelper.convertToJson(
+					this.getXContentSecurityConfigurationAsBR(type, id), true);
+		} catch (final IOException e) {
+			this.logger.error("Unable to load type {} and id {} due to {}",
+					type, id, e);
+			return null;
+		}
+	}
+
+	public BytesReference getXContentSecurityConfigurationAsBR(
+			final String type, final String id)
+			throws MalformedConfigurationException {
+		final GetResponse resp = this.client
 				.prepareGet(this.securityConfigurationIndex, type, id)
-				.setRefresh(true).get().getSourceAsString();
+				.setRefresh(true).get();
+
+		if (resp.isExists()) {
+			return resp.getSourceAsBytesRef();
+		} else {
+			throw new MalformedConfigurationException("document type " + type
+					+ " with id " + id + " does not exists");
+		}
 	}
 
 	public String getSecurityConfigurationIndex() {
@@ -78,11 +130,11 @@ public class SecurityService extends
 	public InetAddress getHostAddressFromRequest(final RestRequest request)
 			throws UnknownHostException {
 
-		this.logger.debug(request.getClass().toString());
+		// this.logger.debug(request.getClass().toString());
 
-		String addr = ((HttpRequest) request).remoteAddr();
+		String addr = ((TomcatHttpServerRestRequest) request).remoteAddr();
 
-		this.logger.debug("original hostname: " + addr);
+		// this.logger.debug("original hostname: " + addr);
 
 		if (addr == null || addr.isEmpty()) {
 			throw new UnknownHostException("Original host is <null> or <empty>");
@@ -98,31 +150,38 @@ public class SecurityService extends
 
 			final String xForwardedForValue = request
 					.header(xForwardedForHeader);
+
+			this.logger.debug("xForwardedForHeader is " + xForwardedForHeader
+					+ ":" + xForwardedForValue);
+
 			final String xForwardedTrustedProxiesS = this.settings
 					.get("security.http.xforwardedfor.trustedproxies");
+			// TODO use yaml list
 			final String[] xForwardedTrustedProxies = xForwardedTrustedProxiesS == null ? new String[0]
 					: xForwardedTrustedProxiesS.replace(" ", "").split(",");
+
 			final boolean xForwardedEnforce = this.settings.getAsBoolean(
 					"security.http.xforwardedfor.enforce", false);
 
 			if (xForwardedForValue != null && !xForwardedForValue.isEmpty()) {
 				final List<String> addresses = Arrays.asList(xForwardedForValue
 						.replace(" ", "").split(","));
-				final List<String> proxiesPassed = new ArrayList<String>(addresses.subList(1,
-						addresses.size()));
-				
-				if(xForwardedTrustedProxies.length == 0)
-				{
-					throw new UnknownHostException(
-							"No trusted proxies");					
-				}
-				
-				proxiesPassed.removeAll(Arrays.asList(xForwardedTrustedProxies));
+				final List<String> proxiesPassed = new ArrayList<String>(
+						addresses.subList(1, addresses.size()));
 
-				logger.debug(proxiesPassed.size()+"/"+proxiesPassed);
-				
-				if (proxiesPassed.size()==0 && (Arrays.asList(xForwardedTrustedProxies).contains(addr) || "127.0.0.1".equals(addr))) {
-								
+				if (xForwardedTrustedProxies.length == 0) {
+					throw new UnknownHostException("No trusted proxies");
+				}
+
+				proxiesPassed
+						.removeAll(Arrays.asList(xForwardedTrustedProxies));
+
+				this.logger.debug(proxiesPassed.size() + "/" + proxiesPassed);
+
+				if (proxiesPassed.size() == 0
+						&& (Arrays.asList(xForwardedTrustedProxies).contains(
+								addr) || "127.0.0.1".equals(addr))) {
+
 					addr = addresses.get(0).trim();
 
 				} else {
@@ -145,6 +204,69 @@ public class SecurityService extends
 
 		// if null or "" then loopback is returned
 		return InetAddress.getByName(addr);
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<DlsPermission> parseDlsPermissions(final BytesReference br)
+			throws IOException, MalformedConfigurationException {
+
+		final List<DlsPermission> perms = new ArrayList<DlsPermission>();
+
+		final List<JSONObject> dlsPermissions = new ArrayList<JSONObject>();
+
+		String json = XContentHelper.convertToJson(br, false);
+
+		if (json.contains("\"hits\":{\"total\":0,\"max_score\":null")) {
+			// no hits
+			this.logger.debug("No hits, return ALL permissions");
+			perms.add(DlsPermission.ALL_PERMISSION);
+			return perms;
+		}
+
+		if (!json.contains("dlspermissions")) {
+			json = XContentHelper.convertToJson(this
+					.getXContentSecurityConfigurationAsBR("dlspermissions",
+							"default"), false);
+		}
+
+		if (json.contains("_source")) {
+			dlsPermissions.addAll((List<JSONObject>) JsonPath.read(json,
+					"$.hits.hits[*]._source.dlspermissions"));
+		} else {
+			dlsPermissions.add((JSONObject) JsonPath.read(json,
+					"$.dlspermissions"));
+		}
+
+		for (final JSONObject dlsPermission : dlsPermissions) {
+
+			if (dlsPermission == null) {
+				continue;
+			}
+
+			for (final String field : dlsPermission.keySet()) {
+
+				final DlsPermission dlsPerm = new DlsPermission();
+				dlsPerm.setField(field);
+
+				JSONArray ja = (JSONArray) ((JSONObject) dlsPermission
+						.get(field)).get("read");
+				dlsPerm.addReadTokens(ja.toArray(new String[0]));
+
+				ja = (JSONArray) ((JSONObject) dlsPermission.get(field))
+						.get("update");
+				dlsPerm.addUpdateTokens(ja.toArray(new String[0]));
+
+				ja = (JSONArray) ((JSONObject) dlsPermission.get(field))
+						.get("delete");
+				dlsPerm.addDeleteTokens(ja.toArray(new String[0]));
+
+				perms.add(dlsPerm);
+			}
+
+		}
+
+		return perms;
 
 	}
 

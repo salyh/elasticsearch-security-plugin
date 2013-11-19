@@ -1,0 +1,25 @@
+{
+			 "rules": [
+			 	{				 
+				 	"permission" : "NONE"
+			 	},
+			 	{
+				 	"hosts" : [ "1.2.3.4" ],
+				 	
+				 	"permission" : "NONE"
+			 	},
+			 	{
+				 	"hosts" : [ "*" ],
+					"users" : [ "Picard","Spock","Guest","Me" ],
+					"roles" : [ "Commander","Guest","Role1" ],
+				 	"indices" :[ "*" ],
+				 	"permission" : "READWRITE"
+			 	},
+			 	{
+				 	"hosts" : [ "8.8.8.8" ],
+				 	"indices" :[ "testindex1","testindex2"],
+				 	"permission" : "READWRITE"
+			 	}
+			 ]		 		 
+}
+

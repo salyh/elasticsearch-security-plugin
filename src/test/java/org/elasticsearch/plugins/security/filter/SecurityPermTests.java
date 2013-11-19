@@ -13,6 +13,7 @@ import junit.framework.TestSuite;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.plugins.security.MalformedConfigurationException;
 import org.elasticsearch.plugins.security.service.permission.PermEvaluator;
+import org.elasticsearch.plugins.security.service.permission.UserRoleCallback;
 
 /**
  * Unit test for simple App.
@@ -67,8 +68,8 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_default.json"));
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.8")) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.8"), null) == PermLevel.ALL);
 	}
 
 	public void testNormalCases() throws Exception {
@@ -79,14 +80,36 @@ public class SecurityPermTests extends TestCase {
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_normal.json"));
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.9")) == PermLevel.ALL);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.8")) == PermLevel.READWRITE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("127.0.01")) == PermLevel.READONLY);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("1.2.3.4")) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.8"), null) == PermLevel.READWRITE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("127.0.01"), null) == PermLevel.READONLY);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("1.2.3.4"), null) == PermLevel.NONE);
+	}
+
+	public void testNormalCasesWithUserRoleTypes() throws Exception {
+
+		final List<String> indices = new ArrayList<String>();
+		indices.add("testindex1");
+		indices.add("testindex2");
+
+		final List<String> types = new ArrayList<String>();
+		types.add("secrettype");
+
+		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
+				this.loadFile("test_normal_withuserroletypes.json"));
+		assertTrue(evaluator.evaluatePerm(indices, types, InetAddress
+				.getByName("127.0.01"), new TestCallback("mister", "unknown")) == PermLevel.READONLY);
+
+		assertTrue(evaluator.evaluatePerm(indices, types, InetAddress
+				.getByName("127.0.01"), new TestCallback("kirk", "unknown")) == PermLevel.READWRITE);
+
+		assertTrue(evaluator.evaluatePerm(indices, types, InetAddress
+				.getByName("8.8.8.8"), new TestCallback("kirk", "unknown")) == PermLevel.ALL);
+
 	}
 
 	public void testNormalIndicesCases() throws Exception {
@@ -96,14 +119,14 @@ public class SecurityPermTests extends TestCase {
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_normal_indices.json"));
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.9")) == PermLevel.ALL);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.8")) == PermLevel.READWRITE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("127.0.01")) == PermLevel.ALL);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("1.2.3.4")) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.8"), null) == PermLevel.READWRITE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("128.0.0.1"), null) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("1.2.3.4"), null) == PermLevel.NONE);
 	}
 
 	public void testWildcardIndicesCases() throws Exception {
@@ -114,14 +137,14 @@ public class SecurityPermTests extends TestCase {
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_wildcard_indices.json"));
 
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.9")) == PermLevel.ALL);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.8")) == PermLevel.READWRITE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("127.0.01")) == PermLevel.ALL);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("1.2.3.4")) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.8"), null) == PermLevel.READWRITE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("128.0.0.1"), null) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("1.2.3.4"), null) == PermLevel.NONE);
 	}
 
 	public void testWildcardMultipleIndicesCases() throws Exception {
@@ -133,15 +156,15 @@ public class SecurityPermTests extends TestCase {
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_multiple_wildcard_indices.json"));
 
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.9")) == PermLevel.NONE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.8")) == PermLevel.READWRITE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("127.0.01")) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.9"), null) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.8"), null) == PermLevel.READWRITE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("127.1.0.1"), null) == PermLevel.NONE);
 
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("1.2.3.4")) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("1.2.3.4"), null) == PermLevel.ALL);
 	}
 
 	public void testWildcardCases() throws Exception {
@@ -152,14 +175,14 @@ public class SecurityPermTests extends TestCase {
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_wildcard.json"));
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.9.8.9")) == PermLevel.ALL);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.9.12.8")) == PermLevel.READWRITE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("127.4.0.1")) == PermLevel.READONLY);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("103.2.3.4")) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.9.8.9"), null) == PermLevel.ALL);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.9.12.8"), null) == PermLevel.READWRITE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("127.4.0.1"), null) == PermLevel.READONLY);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("103.2.3.4"), null) == PermLevel.NONE);
 	}
 
 	public void testNormalCasesFQHN() throws Exception {
@@ -170,10 +193,10 @@ public class SecurityPermTests extends TestCase {
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_normal_fqn.json"));
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.8")) == PermLevel.NONE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("google-public-dns-a.google.com")) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.8"), null) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("google-public-dns-a.google.com"), null) == PermLevel.NONE);
 
 	}
 
@@ -185,10 +208,10 @@ public class SecurityPermTests extends TestCase {
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_wildcard_fqn.json"));
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("8.8.8.8")) == PermLevel.NONE);
-		assertTrue(evaluator.evaluatePerm(indices,
-				InetAddress.getByName("google-public-dns-a.google.com")) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("8.8.8.8"), null) == PermLevel.NONE);
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("google-public-dns-a.google.com"), null) == PermLevel.NONE);
 
 	}
 
@@ -202,8 +225,8 @@ public class SecurityPermTests extends TestCase {
 				this.loadFile("test_bad_format.json"));
 
 		try {
-			assertTrue(evaluator.evaluatePerm(indices,
-					InetAddress.getByName("127.0.0.1")) == PermLevel.NONE);
+			assertTrue(evaluator.evaluatePerm(indices, null,
+					InetAddress.getByName("127.0.0.1"), null) == PermLevel.NONE);
 			fail();
 		} catch (final MalformedConfigurationException e) {
 
@@ -220,8 +243,8 @@ public class SecurityPermTests extends TestCase {
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_no_default.json"));
 		try {
-			assertTrue(evaluator.evaluatePerm(indices,
-					InetAddress.getByName("8.8.8.9")) == PermLevel.ALL);
+			assertTrue(evaluator.evaluatePerm(indices, null,
+					InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
 			fail();
 		} catch (final MalformedConfigurationException e) {
 
@@ -238,11 +261,36 @@ public class SecurityPermTests extends TestCase {
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
 				this.loadFile("test_malformed_structure.json"));
 		try {
-			assertTrue(evaluator.evaluatePerm(indices,
-					InetAddress.getByName("8.8.8.9")) == PermLevel.ALL);
+			assertTrue(evaluator.evaluatePerm(indices, null,
+					InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
 			fail();
 		} catch (final MalformedConfigurationException e) {
 
+		}
+
+	}
+
+	private static class TestCallback implements UserRoleCallback {
+
+		private final String user;
+		private final String role;
+
+		protected TestCallback(final String user, final String role) {
+			super();
+			this.user = user;
+			this.role = role;
+		}
+
+		@Override
+		public String getRemoteuser() {
+			// TODO Auto-generated method stub
+			return this.user;
+		}
+
+		@Override
+		public boolean isRemoteUserInRole(final String role) {
+			// TODO Auto-generated method stub
+			return role.equals(this.role);
 		}
 
 	}

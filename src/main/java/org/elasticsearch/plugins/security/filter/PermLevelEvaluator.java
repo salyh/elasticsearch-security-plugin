@@ -11,7 +11,6 @@ public class PermLevelEvaluator extends PermEvaluator<PermLevel> {
 
 	@Override
 	protected PermLevel createFromString(final String s) {
-
 		return PermLevel.valueOf(s);
 	}
 
