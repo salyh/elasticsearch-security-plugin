@@ -15,7 +15,12 @@ As of now two security modules are implemented:
 * Actionpathfilter: Restrict actions against Elasticsearch on a coarse-grained level like who is allowed to to READ, WRITE or even ADMIN rest api calls
 * Document level security (dls): Restrict actions on document level like who is allowed to query for which fields within a document
 
-<h3>Installation</h3>
+<h3>Installation</h3> 
+(Until the first release is out you have to build this plugin yourself with maven)
+
+Build yourself:
+* Install maven
+* execute ``mvn clean package -DskipTests=true`` 
 
 Windows:
 ``plugin.bat --url http://... --install elasticsearch-security-plugin-0.0.1.Beta2``
@@ -30,7 +35,8 @@ UNIX:
 <h4>Configuration (elasticsearch.yml)</h4>
 Enable the security plugin
 * ``http.type: org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerTransportModule``
-* ``http.port: 8080`` Define exactly one port, Port ranges are not permitted
+* ``script.disable_dynamic: true`` Dynamic scripts are unsafe and can potentially tamper this plugin
+* ``http.port: 9200`` Define exactly one port, Port ranges are not permitted
 
 Setup kerberos
 * ``security.kerberosimpl: waffle|spnegoad|none`` Kerberos implementation
@@ -365,3 +371,10 @@ If no rule matches the default rule will be applied.<br><br>
 This rule match if (the user is u1 or u2) and (has the role rol1 or role2) <br>
 and (issues the request from host1 or host2) and (operates on i1 or i2 or both)<br>
 and uses (documents of types t1 or t2 or both)<br>
+<p>
+<p>
+TODO<br>
+* http://tomcat.apache.org/tomcat-7.0-doc/api/org/apache/catalina/valves/RemoteIpValve.html
+* Check restict highlighting http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-highlighting.html
+* enforce script.disable_dynamic: true
+
