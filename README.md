@@ -41,7 +41,7 @@ Enable the security plugin
 Setup kerberos
 * ``security.kerberosimpl: waffle|spnegoad|none`` Kerberos implementation
 
-If you use not spnegoad then you must provide the following configuration parameters:
+If you use spnegoad then you must provide the following configuration parameters:
 * ``security.spnegoad.ldapurls: ldap://myldaphost:389`` Ldap Server
 * ``security.spnegoad.isactivedirectory: true`` true if your ldap server is AD, false otherwise
 * ``security.spnegoad.login.conf.path: c:\path\to\login.conf`` JAAS login modules configuration
@@ -377,4 +377,7 @@ TODO<br>
 * http://tomcat.apache.org/tomcat-7.0-doc/api/org/apache/catalina/valves/RemoteIpValve.html
 * Check restict highlighting http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-highlighting.html
 * enforce script.disable_dynamic: true
-
+* Check restrict bulk requests and responses
+* User Tomcat JNDIRealm code for finding users/roles when not using AD
+* Add "at least authenticated" user rule
+* Provide rest api endpoint for displaying current security rules/status
