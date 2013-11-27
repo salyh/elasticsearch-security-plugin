@@ -1,5 +1,9 @@
 elasticsearch-security-plugin
 =============================
+
+<a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
+<a href="https://twitter.com/hendrikdev22">Twitter @hendrikdev22</a>
+
 This plugin adds http/rest security functionality to Elasticsearch in kind of separate modules.
 Instead of Netty a embedded Tomcat 7 is used to process http/rest requests. 
 
