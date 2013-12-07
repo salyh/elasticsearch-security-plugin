@@ -10,8 +10,8 @@
 			 	},
 			 	{
 				 	"hosts" : [ "*" ],
-					"users" : [ "Picard","Spock","Guest","Me" ],
-					"roles" : [ "Commander","Guest","Role1" ],
+					"users" : [ "Picard","Spock","Guest","Me","hnelson","nelsonh" ],
+					"roles" : [ "Commander","Guest","Role1","dummy_ldap","dummy_sslldap" ],
 				 	"indices" :[ "*" ],
 				 	"permission" : "READWRITE"
 			 	},

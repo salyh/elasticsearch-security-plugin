@@ -25,33 +25,33 @@ public class ActionPathFilter extends SecureRestFilter {
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
 				request.path(), SecurityUtil.BUILT_IN_ADMIN_COMMANDS)) {
-			this.log.warn("Index- or Typename should not contains admin commands like "
+			log.warn("Index- or Typename should not contains admin commands like "
 					+ Arrays.toString(SecurityUtil.BUILT_IN_ADMIN_COMMANDS));
 		}
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
 				request.path(), SecurityUtil.BUILT_IN_READ_COMMANDS)) {
-			this.log.warn("Index- or Typename should not contains search commands like "
+			log.warn("Index- or Typename should not contains search commands like "
 					+ Arrays.toString(SecurityUtil.BUILT_IN_READ_COMMANDS));
 		}
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
 				request.path(), SecurityUtil.BUILT_IN_WRITE_COMMANDS)) {
-			this.log.warn("Index- or Typename should not contains write commands like "
+			log.warn("Index- or Typename should not contains write commands like "
 					+ Arrays.toString(SecurityUtil.BUILT_IN_WRITE_COMMANDS));
 		}
 
 		try {
 
 			final PermLevel permLevel = new PermLevelEvaluator(
-					this.securityService.getXContentSecurityConfiguration(
-							this.getType(), this.getId()))
-					.evaluatePerm(
-							SecurityUtil.getIndices(request),
-							SecurityUtil.getTypes(request),
-							this.getClientHostAddress(request),
-							new TomcatUserRoleCallback(request
-									.getHttpServletRequest()));
+					securityService.getXContentSecurityConfiguration(
+							getType(), getId()))
+			.evaluatePerm(
+					SecurityUtil.getIndices(request),
+					SecurityUtil.getTypes(request),
+					getClientHostAddress(request),
+					new TomcatUserRoleCallback(request
+							.getHttpServletRequest(),securityService.getSettings().get("security.ssl.userattribute")));
 
 			if (permLevel == PermLevel.NONE) {
 				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
@@ -83,14 +83,14 @@ public class ActionPathFilter extends SecureRestFilter {
 			filterChain.continueProcessing(request, channel);
 			return;
 		} catch (final MalformedConfigurationException e) {
-			this.log.error("Cannot parse security configuration ", e);
+			log.error("Cannot parse security configuration ", e);
 			SecurityUtil.send(request, channel,
 					RestStatus.INTERNAL_SERVER_ERROR,
 					"Cannot parse security configuration");
 
 			return;
 		} catch (final Exception e) {
-			this.log.error("Generic error: ", e);
+			log.error("Generic error: ", e);
 			SecurityUtil.send(request, channel,
 					RestStatus.INTERNAL_SERVER_ERROR,
 					"Generic error, see log for details");

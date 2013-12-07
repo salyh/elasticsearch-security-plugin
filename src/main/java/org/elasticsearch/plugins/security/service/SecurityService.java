@@ -28,10 +28,10 @@ import org.elasticsearch.rest.RestRequest;
 import com.jayway.jsonpath.JsonPath;
 
 public class SecurityService extends
-		AbstractLifecycleComponent<SecurityService> {
+AbstractLifecycleComponent<SecurityService> {
 
 	public Settings getSettings() {
-		return this.settings;
+		return settings;
 	}
 
 	private final static String DEFAULT_SECURITY_CONFIG_INDEX = "securityconfiguration";
@@ -48,13 +48,13 @@ public class SecurityService extends
 		this.settings = settings;
 		this.restController = restController;
 		this.client = client;
-		this.securityConfigurationIndex = settings.get(
+		securityConfigurationIndex = settings.get(
 				"security.configuration.index", DEFAULT_SECURITY_CONFIG_INDEX);
 
 	}
 
 	public Client getClient() {
-		return this.client;
+		return client;
 	}
 
 	@Override
@@ -62,12 +62,12 @@ public class SecurityService extends
 
 		// TODO order
 
-		final Boolean enableActionPathFilter = this.settings.getAsBoolean(
+		final Boolean enableActionPathFilter = settings.getAsBoolean(
 				"security.module.actionpathfilter.enabled", true);
 
 		if (enableActionPathFilter != null
 				&& enableActionPathFilter.booleanValue()) {
-			this.restController.registerFilter(new ActionPathFilter(this));
+			restController.registerFilter(new ActionPathFilter(this));
 		}
 
 		// this.restController
@@ -86,12 +86,12 @@ public class SecurityService extends
 	@Override
 	protected void doStop() throws ElasticSearchException {
 
-		this.logger.debug("doStop");
+		logger.debug("doStop");
 	}
 
 	@Override
 	protected void doClose() throws ElasticSearchException {
-		this.logger.debug("doClose");
+		logger.debug("doClose");
 
 	}
 
@@ -100,9 +100,9 @@ public class SecurityService extends
 			MalformedConfigurationException {
 		try {
 			return XContentHelper.convertToJson(
-					this.getXContentSecurityConfigurationAsBR(type, id), true);
+					getXContentSecurityConfigurationAsBR(type, id), true);
 		} catch (final IOException e) {
-			this.logger.error("Unable to load type {} and id {} due to {}",
+			logger.error("Unable to load type {} and id {} due to {}",
 					type, id, e);
 			return null;
 		}
@@ -110,9 +110,9 @@ public class SecurityService extends
 
 	public BytesReference getXContentSecurityConfigurationAsBR(
 			final String type, final String id)
-			throws MalformedConfigurationException {
-		final GetResponse resp = this.client
-				.prepareGet(this.securityConfigurationIndex, type, id)
+					throws MalformedConfigurationException {
+		final GetResponse resp = client
+				.prepareGet(securityConfigurationIndex, type, id)
 				.setRefresh(true).get();
 
 		if (resp.isExists()) {
@@ -124,7 +124,7 @@ public class SecurityService extends
 	}
 
 	public String getSecurityConfigurationIndex() {
-		return this.securityConfigurationIndex;
+		return securityConfigurationIndex;
 	}
 
 	public InetAddress getHostAddressFromRequest(final RestRequest request)
@@ -143,7 +143,7 @@ public class SecurityService extends
 		// security.http.xforwardfor.header
 		// security.http.xforwardfor.trustedproxies
 		// security.http.xforwardfor.enforce
-		final String xForwardedForHeader = this.settings
+		final String xForwardedForHeader = settings
 				.get("security.http.xforwardedfor.header");
 
 		if (xForwardedForHeader != null && !xForwardedForHeader.isEmpty()) {
@@ -151,16 +151,16 @@ public class SecurityService extends
 			final String xForwardedForValue = request
 					.header(xForwardedForHeader);
 
-			this.logger.debug("xForwardedForHeader is " + xForwardedForHeader
+			logger.debug("xForwardedForHeader is " + xForwardedForHeader
 					+ ":" + xForwardedForValue);
 
-			final String xForwardedTrustedProxiesS = this.settings
+			final String xForwardedTrustedProxiesS = settings
 					.get("security.http.xforwardedfor.trustedproxies");
 			// TODO use yaml list
 			final String[] xForwardedTrustedProxies = xForwardedTrustedProxiesS == null ? new String[0]
 					: xForwardedTrustedProxiesS.replace(" ", "").split(",");
 
-			final boolean xForwardedEnforce = this.settings.getAsBoolean(
+			final boolean xForwardedEnforce = settings.getAsBoolean(
 					"security.http.xforwardedfor.enforce", false);
 
 			if (xForwardedForValue != null && !xForwardedForValue.isEmpty()) {
@@ -174,9 +174,9 @@ public class SecurityService extends
 				}
 
 				proxiesPassed
-						.removeAll(Arrays.asList(xForwardedTrustedProxies));
+				.removeAll(Arrays.asList(xForwardedTrustedProxies));
 
-				this.logger.debug(proxiesPassed.size() + "/" + proxiesPassed);
+				logger.debug(proxiesPassed.size() + "/" + proxiesPassed);
 
 				if (proxiesPassed.size() == 0
 						&& (Arrays.asList(xForwardedTrustedProxies).contains(
@@ -219,15 +219,14 @@ public class SecurityService extends
 
 		if (json.contains("\"hits\":{\"total\":0,\"max_score\":null")) {
 			// no hits
-			this.logger.debug("No hits, return ALL permissions");
+			logger.debug("No hits, return ALL permissions");
 			perms.add(DlsPermission.ALL_PERMISSION);
 			return perms;
 		}
 
 		if (!json.contains("dlspermissions")) {
-			json = XContentHelper.convertToJson(this
-					.getXContentSecurityConfigurationAsBR("dlspermissions",
-							"default"), false);
+			json = XContentHelper.convertToJson(getXContentSecurityConfigurationAsBR("dlspermissions",
+					"default"), false);
 		}
 
 		if (json.contains("_source")) {

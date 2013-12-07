@@ -9,8 +9,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.michaelo.tomcat.realm.ActiveDirectoryPrincipal;
-
+import org.apache.catalina.realm.GenericPrincipal;
 import org.elasticsearch.common.bytes.BytesArray;
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.io.Streams;
@@ -23,7 +22,7 @@ import org.elasticsearch.rest.support.RestUtils;
 import waffle.servlet.WindowsPrincipal;
 
 public class TomcatHttpServerRestRequest extends AbstractRestRequest implements
-		HttpRequest {
+HttpRequest {
 
 	protected static final ESLogger log = Loggers
 			.getLogger(TomcatHttpServerRestRequest.class);
@@ -43,31 +42,34 @@ public class TomcatHttpServerRestRequest extends AbstractRestRequest implements
 	public TomcatHttpServerRestRequest(final HttpServletRequest request)
 			throws IOException {
 		this.request = request;
-		this.opaqueId = request.getHeader("X-Opaque-Id");
-		this.method = Method.valueOf(request.getMethod());
-		this.params = new HashMap<String, String>();
+		opaqueId = request.getHeader("X-Opaque-Id");
+		method = Method.valueOf(request.getMethod());
+		params = new HashMap<String, String>();
 
 		log.debug("HttpServletRequest impl class: " + request.getClass());
+		log.debug("HttpServletRequest ru: " + request.getRemoteUser());
+		log.debug("HttpServletRequest up: " + request.getUserPrincipal());
+		//log.debug("HttpServletRequest up: " + request.getUserPrincipal().getClass().toString());
 
 		if (request.getQueryString() != null) {
 			RestUtils.decodeQueryString(request.getQueryString(), 0,
-					this.params);
+					params);
 		}
 
-		this.content = new BytesArray(Streams.copyToByteArray(request
+		content = new BytesArray(Streams.copyToByteArray(request
 				.getInputStream()));
-		request.setAttribute(REQUEST_CONTENT_ATTRIBUTE, this.content);
+		request.setAttribute(REQUEST_CONTENT_ATTRIBUTE, content);
 	}
 
 	@Override
 	public Method method() {
-		return this.method;
+		return method;
 	}
 
 	@Override
 	public String uri() {
 
-		return this.request.getRequestURI();
+		return request.getRequestURI();
 
 		/*
 		 * int prefixLength = 0; if (request.getContextPath() != null ) {
@@ -81,12 +83,12 @@ public class TomcatHttpServerRestRequest extends AbstractRestRequest implements
 
 	@Override
 	public String rawPath() {
-		return this.uri();
+		return uri();
 	}
 
 	@Override
 	public boolean hasContent() {
-		return this.content.length() > 0;
+		return content.length() > 0;
 	}
 
 	@Override
@@ -96,32 +98,32 @@ public class TomcatHttpServerRestRequest extends AbstractRestRequest implements
 
 	@Override
 	public BytesReference content() {
-		return this.content;
+		return content;
 	}
 
 	@Override
 	public String header(final String name) {
-		return this.request.getHeader(name);
+		return request.getHeader(name);
 	}
 
 	@Override
 	public Map<String, String> params() {
-		return this.params;
+		return params;
 	}
 
 	@Override
 	public boolean hasParam(final String key) {
-		return this.params.containsKey(key);
+		return params.containsKey(key);
 	}
 
 	@Override
 	public String param(final String key) {
-		return this.params.get(key);
+		return params.get(key);
 	}
 
 	@Override
 	public String param(final String key, final String defaultValue) {
-		final String value = this.params.get(key);
+		final String value = params.get(key);
 		if (value == null) {
 			return defaultValue;
 		}
@@ -129,56 +131,68 @@ public class TomcatHttpServerRestRequest extends AbstractRestRequest implements
 	}
 
 	public String localAddr() {
-		return this.request.getLocalAddr();
+		return request.getLocalAddr();
 	}
 
 	public long localPort() {
-		return this.request.getLocalPort();
+		return request.getLocalPort();
 	}
 
 	public String remoteAddr() {
-		return this.request.getRemoteAddr();
+		return request.getRemoteAddr();
 	}
 
 	public long remotePort() {
-		return this.request.getRemotePort();
+		return request.getRemotePort();
 	}
 
 	public String remoteUser() {
-		return this.request.getRemoteUser();
+		return request.getRemoteUser();
 	}
 
 	public String scheme() {
-		return this.request.getScheme();
+		return request.getScheme();
 	}
 
 	public String contentType() {
-		return this.request.getContentType();
+		return request.getContentType();
 	}
 
 	public String opaqueId() {
-		return this.opaqueId;
+		return opaqueId;
 	}
 
 	public HttpServletRequest getHttpServletRequest() {
-		return this.request;
+		return request;
 
 	}
 
 	public Principal getUserPrincipal() {
-		return this.request.getUserPrincipal();
+		return request.getUserPrincipal();
 
 	}
 
 	public boolean isUserInRole(final String role) {
-		return this.request.isUserInRole(role);
+		return request.isUserInRole(role);
 
 	}
 
 	public List<String> getUserRoles() {
 
-		if (this.request.getUserPrincipal() instanceof WindowsPrincipal) {
-			final WindowsPrincipal wp = (WindowsPrincipal) this.request
+		if (request.getUserPrincipal() instanceof GenericPrincipal) {
+			final GenericPrincipal wp = (GenericPrincipal) request
+					.getUserPrincipal();
+
+			if (wp.getRoles() != null) {
+				final List<String> roles = Arrays.asList(wp.getRoles());
+				log.debug("GenericPrincipal roles: " + roles);
+				return roles;
+			}
+		}
+
+
+		if (request.getUserPrincipal() instanceof WindowsPrincipal) {
+			final WindowsPrincipal wp = (WindowsPrincipal) request
 					.getUserPrincipal();
 
 			log.debug("WindowsPrincipal roles: " + wp.getRolesString());
@@ -189,17 +203,19 @@ public class TomcatHttpServerRestRequest extends AbstractRestRequest implements
 			}
 		}
 
-		if (this.request.getUserPrincipal() instanceof ActiveDirectoryPrincipal) {
+		/*if (this.request.getUserPrincipal() instanceof ActiveDirectoryPrincipal) {
 			final ActiveDirectoryPrincipal ap = (ActiveDirectoryPrincipal) this.request
 					.getUserPrincipal();
 
 			log.debug("ActiveDirectoryPrincipal roles: " + ap.getRoles());
 
 			return ap.getRoles();
-		}
+		}*/
 
 		return null;
 
 	}
+
+
 
 }

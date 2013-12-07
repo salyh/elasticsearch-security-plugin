@@ -30,7 +30,7 @@ public abstract class SecureRestFilter extends RestFilter {
 	protected InetAddress getClientHostAddress(final RestRequest request)
 			throws UnknownHostException {
 
-		final InetAddress hostAddress = this.securityService
+		final InetAddress hostAddress = securityService
 				.getHostAddressFromRequest(request);
 
 		return hostAddress;
@@ -42,11 +42,11 @@ public abstract class SecureRestFilter extends RestFilter {
 
 		// TODO check aliases, multiple indices, _all, ...
 		final List<String> indices = SecurityUtil.getIndices(request);
-		if (indices.contains(this.securityService
+		if (indices.contains(securityService
 				.getSecurityConfigurationIndex())) {
 
 			try {
-				if (this.getClientHostAddress(request).getHostAddress()
+				if (getClientHostAddress(request).getHostAddress()
 						.equals("127.0.0.1")) {
 					filterChain.continueProcessing(request, channel);
 				} else {
@@ -61,7 +61,7 @@ public abstract class SecureRestFilter extends RestFilter {
 
 			((TomcatHttpServerRestRequest) request).getUserRoles();
 
-			this.processSecure((TomcatHttpServerRestRequest) request,
+			processSecure((TomcatHttpServerRestRequest) request,
 					(TomcatHttpServerRestChannel) channel, filterChain);
 
 		}

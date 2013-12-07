@@ -26,10 +26,10 @@ public class DlsPermission {
 
 	@Override
 	public String toString() {
-		return "DlsPermission [readTokens=" + this.readTokens
-				+ ", updateTokens=" + this.updateTokens + ", deleteTokens="
-				+ this.deleteTokens + ", field=" + this.field
-				+ ", isDefault()=" + this.isDefault() + "]";
+		return "DlsPermission [readTokens=" + readTokens
+				+ ", updateTokens=" + updateTokens + ", deleteTokens="
+				+ deleteTokens + ", field=" + field
+				+ ", isDefault()=" + isDefault() + "]";
 	}
 
 	@Override
@@ -38,14 +38,14 @@ public class DlsPermission {
 		int result = 1;
 		result = prime
 				* result
-				+ (this.deleteTokens == null ? 0 : this.deleteTokens.hashCode());
+				+ (deleteTokens == null ? 0 : deleteTokens.hashCode());
 		result = prime * result
-				+ (this.field == null ? 0 : this.field.hashCode());
+				+ (field == null ? 0 : field.hashCode());
 		result = prime * result
-				+ (this.readTokens == null ? 0 : this.readTokens.hashCode());
+				+ (readTokens == null ? 0 : readTokens.hashCode());
 		result = prime
 				* result
-				+ (this.updateTokens == null ? 0 : this.updateTokens.hashCode());
+				+ (updateTokens == null ? 0 : updateTokens.hashCode());
 		return result;
 	}
 
@@ -61,32 +61,32 @@ public class DlsPermission {
 			return false;
 		}
 		final DlsPermission other = (DlsPermission) obj;
-		if (this.deleteTokens == null) {
+		if (deleteTokens == null) {
 			if (other.deleteTokens != null) {
 				return false;
 			}
-		} else if (!this.deleteTokens.equals(other.deleteTokens)) {
+		} else if (!deleteTokens.equals(other.deleteTokens)) {
 			return false;
 		}
-		if (this.field == null) {
+		if (field == null) {
 			if (other.field != null) {
 				return false;
 			}
-		} else if (!this.field.equals(other.field)) {
+		} else if (!field.equals(other.field)) {
 			return false;
 		}
-		if (this.readTokens == null) {
+		if (readTokens == null) {
 			if (other.readTokens != null) {
 				return false;
 			}
-		} else if (!this.readTokens.equals(other.readTokens)) {
+		} else if (!readTokens.equals(other.readTokens)) {
 			return false;
 		}
-		if (this.updateTokens == null) {
+		if (updateTokens == null) {
 			if (other.updateTokens != null) {
 				return false;
 			}
-		} else if (!this.updateTokens.equals(other.updateTokens)) {
+		} else if (!updateTokens.equals(other.updateTokens)) {
 			return false;
 		}
 		return true;
@@ -97,75 +97,75 @@ public class DlsPermission {
 	}
 
 	public boolean isDefault() {
-		return this.field.equals("*");
+		return field.equals("*");
 	}
 
 	public boolean isAllowNone() {
-		return this.readTokens.isEmpty() && this.updateTokens.isEmpty()
-				&& this.deleteTokens.isEmpty();
+		return readTokens.isEmpty() && updateTokens.isEmpty()
+				&& deleteTokens.isEmpty();
 	}
 
 	public boolean isTokenAllowedToRead(final String token) {
-		return this.readTokens.contains(token) || this.readTokens.contains("*");
+		return readTokens.contains(token) || readTokens.contains("*");
 	}
 
 	public boolean isTokenAllowedToUpdate(final String token) {
-		return this.updateTokens.contains(token)
-				|| this.updateTokens.contains("*");
+		return updateTokens.contains(token)
+				|| updateTokens.contains("*");
 	}
 
 	public boolean isTokenAllowedToDelete(final String token) {
-		return this.deleteTokens.contains(token)
-				|| this.deleteTokens.contains("*");
+		return deleteTokens.contains(token)
+				|| deleteTokens.contains("*");
 	}
 
 	public boolean isAnyTokenAllowedToDelete(final List<String> tokens) {
-		return !Collections.disjoint(this.deleteTokens, tokens)
-				|| this.deleteTokens.contains("*");
+		return !Collections.disjoint(deleteTokens, tokens)
+				|| deleteTokens.contains("*");
 	}
 
 	public boolean isAnyTokenAllowedToRead(final List<String> tokens) {
-		return !Collections.disjoint(this.readTokens, tokens)
-				|| this.readTokens.contains("*");
+		return !Collections.disjoint(readTokens, tokens)
+				|| readTokens.contains("*");
 	}
 
 	public boolean isAnyTokenAllowedToUpdate(final List<String> tokens) {
-		return !Collections.disjoint(this.updateTokens, tokens)
-				|| this.updateTokens.contains("*");
+		return !Collections.disjoint(updateTokens, tokens)
+				|| updateTokens.contains("*");
 	}
 
 	public String getField() {
-		return this.field;
+		return field;
 	}
 
 	public void addReadToken(final String token) {
-		this.addToken(token, this.readTokens);
+		addToken(token, readTokens);
 	}
 
 	public void addReadTokens(final String[] tokens) {
 		for (final String token : tokens) {
-			this.addToken(token, this.readTokens);
+			addToken(token, readTokens);
 		}
 	}
 
 	public void addUpdateTokens(final String[] tokens) {
 		for (final String token : tokens) {
-			this.addToken(token, this.updateTokens);
+			addToken(token, updateTokens);
 		}
 	}
 
 	public void addDeleteTokens(final String[] tokens) {
 		for (final String token : tokens) {
-			this.addToken(token, this.deleteTokens);
+			addToken(token, deleteTokens);
 		}
 	}
 
 	public void addUpdateToken(final String token) {
-		this.addToken(token, this.updateTokens);
+		addToken(token, updateTokens);
 	}
 
 	public void addDeleteToken(final String token) {
-		this.addToken(token, this.deleteTokens);
+		addToken(token, deleteTokens);
 	}
 
 	private void addToken(final String token, final List<String> list) {

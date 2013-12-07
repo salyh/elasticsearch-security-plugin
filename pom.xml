@@ -4,7 +4,7 @@
 
 	<groupId>com.github.salyh.elasticsearch</groupId>
 	<artifactId>elasticsearch-security-plugin</artifactId>
-	<version>0.0.2.Beta2</version>
+	<version>0.0.2.Beta3</version>
 	<packaging>jar</packaging>
 
 	<name>elasticsearch-security-plugin</name>
@@ -162,23 +162,23 @@
 			<artifactId>waffle-tomcat7</artifactId>
 			<version>1.5</version>
 		</dependency>
-		
+		<!-- 
 		<dependency>
   <groupId>net.sf.michael-o.tomcat</groupId>
   <artifactId>tomcat-authnz-spnego-ad-tc7</artifactId>
   <version>0.9.1</version>
-</dependency>
+</dependency>-->
 		
 		<dependency>
     <groupId>com.jayway.jsonpath</groupId>
     <artifactId>json-path</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
 </dependency>
 
 <dependency>
     <groupId>com.jayway.jsonpath</groupId>
     <artifactId>json-path-assert</artifactId>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
     <scope>test</scope>
 </dependency>
 
@@ -231,11 +231,25 @@
 			</testResource>
 			<testResource>
 				<directory>${basedir}/src/test/resources</directory>
-				<filtering>true</filtering>
+				<filtering>false</filtering>
 				<includes>
 					<include>**/*.*</include>
 				</includes>
+				<excludes>
+				<exclude>login.conf</exclude>
+				</excludes>
 			</testResource>
+			
+			<testResource>
+				<directory>${basedir}/src/test/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>login.conf</include>
+				</includes>
+				
+			</testResource>
+			
+			
 		</testResources>
 
 		<plugins>

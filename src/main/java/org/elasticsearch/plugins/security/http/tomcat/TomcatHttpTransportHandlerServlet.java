@@ -30,12 +30,12 @@ public class TomcatHttpTransportHandlerServlet extends HttpServlet {
 			final HttpServletResponse resp) throws ServletException,
 			IOException {
 
-		final HttpServerAdapter adapter = this.getTransport()
+		final HttpServerAdapter adapter = getTransport()
 				.httpServerAdapter();
 		final TomcatHttpServerRestRequest restRequest = new TomcatHttpServerRestRequest(
 				req);
 		final TomcatHttpServerRestChannel restChannel = new TomcatHttpServerRestChannel(
-				restRequest, resp, this.transport.getSecurityService());
+				restRequest, resp, transport.getSecurityService());
 
 		try {
 
@@ -54,7 +54,7 @@ public class TomcatHttpTransportHandlerServlet extends HttpServlet {
 	}
 
 	public TomcatHttpServerTransport getTransport() {
-		return this.transport;
+		return transport;
 	}
 
 	public void setTransport(final TomcatHttpServerTransport transport) {

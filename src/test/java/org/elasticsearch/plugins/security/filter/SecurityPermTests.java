@@ -67,7 +67,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex1");
 		indices.add("testindex2");
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_default.json"));
+				loadFile("test_default.json"));
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.8"), null) == PermLevel.ALL);
 	}
@@ -79,7 +79,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_normal.json"));
+				loadFile("test_normal.json"));
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
 		assertTrue(evaluator.evaluatePerm(indices, null,
@@ -100,7 +100,7 @@ public class SecurityPermTests extends TestCase {
 		types.add("secrettype");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_normal_withuserroletypes.json"));
+				loadFile("test_normal_withuserroletypes.json"));
 		assertTrue(evaluator.evaluatePerm(indices, types, InetAddress
 				.getByName("127.0.01"), new TestCallback("mister", "unknown")) == PermLevel.READONLY);
 
@@ -118,7 +118,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex1");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_normal_indices.json"));
+				loadFile("test_normal_indices.json"));
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
 		assertTrue(evaluator.evaluatePerm(indices, null,
@@ -135,7 +135,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex1");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_wildcard_indices.json"));
+				loadFile("test_wildcard_indices.json"));
 
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
@@ -154,7 +154,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex3");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_multiple_wildcard_indices.json"));
+				loadFile("test_multiple_wildcard_indices.json"));
 
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.9"), null) == PermLevel.NONE);
@@ -174,7 +174,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_wildcard.json"));
+				loadFile("test_wildcard.json"));
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.9.8.9"), null) == PermLevel.ALL);
 		assertTrue(evaluator.evaluatePerm(indices, null,
@@ -192,7 +192,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_normal_fqn.json"));
+				loadFile("test_normal_fqn.json"));
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.8"), null) == PermLevel.NONE);
 		assertTrue(evaluator.evaluatePerm(indices, null,
@@ -207,7 +207,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_wildcard_fqn.json"));
+				loadFile("test_wildcard_fqn.json"));
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.8"), null) == PermLevel.NONE);
 		assertTrue(evaluator.evaluatePerm(indices, null,
@@ -222,7 +222,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_bad_format.json"));
+				loadFile("test_bad_format.json"));
 
 		try {
 			assertTrue(evaluator.evaluatePerm(indices, null,
@@ -241,7 +241,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_no_default.json"));
+				loadFile("test_no_default.json"));
 		try {
 			assertTrue(evaluator.evaluatePerm(indices, null,
 					InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
@@ -259,7 +259,7 @@ public class SecurityPermTests extends TestCase {
 		indices.add("testindex2");
 
 		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
-				this.loadFile("test_malformed_structure.json"));
+				loadFile("test_malformed_structure.json"));
 		try {
 			assertTrue(evaluator.evaluatePerm(indices, null,
 					InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
@@ -284,7 +284,7 @@ public class SecurityPermTests extends TestCase {
 		@Override
 		public String getRemoteuser() {
 			// TODO Auto-generated method stub
-			return this.user;
+			return user;
 		}
 
 		@Override

@@ -50,14 +50,14 @@ public class DlsWriteFilter extends SecureRestFilter {
 			}
 
 			final List<String> dlsTokens = new PermDlsEvaluator(
-					this.securityService.getXContentSecurityConfiguration(
-							this.getType(), this.getId()))
-					.evaluatePerm(
-							SecurityUtil.getIndices(request),
-							SecurityUtil.getTypes(request),
-							this.getClientHostAddress(request),
-							new TomcatUserRoleCallback(request
-									.getHttpServletRequest()));
+					securityService.getXContentSecurityConfiguration(
+							getType(), getId()))
+			.evaluatePerm(
+					SecurityUtil.getIndices(request),
+					SecurityUtil.getTypes(request),
+					getClientHostAddress(request),
+					new TomcatUserRoleCallback(request
+							.getHttpServletRequest(),securityService.getSettings().get("security.ssl.userattribute")));
 
 			final String json = XContentHelper.convertToJson(request.content(),
 					true);
@@ -67,25 +67,25 @@ public class DlsWriteFilter extends SecureRestFilter {
 			// final XContentParser parser = XContentHelper.createParser(request
 			// .content());
 
-			this.log.debug("fieldlevelpermfilter orig: " + json);
+			log.debug("fieldlevelpermfilter orig: " + json);
 
-			this.log.debug("dls tokens: " + dlsTokens);
+			log.debug("dls tokens: " + dlsTokens);
 
 			final String id = SecurityUtil.getId(request);
 
 			try {
-				final GetResponse res = this.securityService
+				final GetResponse res = securityService
 						.getClient()
 						.get(new GetRequest(SecurityUtil.getIndices(request)
 								.get(0), SecurityUtil.getTypes(request).get(0),
 								id)).actionGet();
 
-				this.log.debug("document with id found: " + res.getId());
+				log.debug("document with id found: " + res.getId());
 
-				final List<DlsPermission> perms = this.securityService
+				final List<DlsPermission> perms = securityService
 						.parseDlsPermissions(res.getSourceAsBytesRef());
 
-				this.log.debug("perms " + perms);
+				log.debug("perms " + perms);
 
 				final List<String> fields = new ArrayList<String>();
 
@@ -98,7 +98,7 @@ public class DlsWriteFilter extends SecureRestFilter {
 					}
 
 				}
-				this.log.debug("ffields " + fields);
+				log.debug("ffields " + fields);
 
 				final Tuple<XContentType, Map<String, Object>> mapTuple = XContentHelper
 						.convertToMap(request.content(), true);
@@ -107,7 +107,7 @@ public class DlsWriteFilter extends SecureRestFilter {
 						.filter(mapTuple.v2(), fields.toArray(new String[0]),
 								new String[] { "*" });
 
-				this.log.debug("filteredSource " + filteredSource);
+				log.debug("filteredSource " + filteredSource);
 
 				final XContentBuilder sourceToBeReturned = XContentFactory
 						.contentBuilder(mapTuple.v1()).map(filteredSource);
@@ -121,20 +121,20 @@ public class DlsWriteFilter extends SecureRestFilter {
 			} catch (final Exception e) {
 				// TODO Auto-generated catch block
 				// e.printStackTrace();
-				this.log.debug("no document with id found: " + e.getMessage());
+				log.debug("no document with id found: " + e.getMessage());
 			}
 
 			filterChain.continueProcessing(request, channel);
 			return;
 		} catch (final MalformedConfigurationException e) {
-			this.log.error("Cannot parse security configuration ", e);
+			log.error("Cannot parse security configuration ", e);
 			SecurityUtil.send(request, channel,
 					RestStatus.INTERNAL_SERVER_ERROR,
 					"Cannot parse security configuration");
 
 			return;
 		} catch (final Exception e) {
-			this.log.error("Generic error: ", e);
+			log.error("Generic error: ", e);
 			SecurityUtil.send(request, channel,
 					RestStatus.INTERNAL_SERVER_ERROR,
 					"Generic error, see log for details");

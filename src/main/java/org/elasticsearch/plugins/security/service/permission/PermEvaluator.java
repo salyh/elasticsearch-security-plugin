@@ -38,7 +38,7 @@ public abstract class PermEvaluator<T> {
 
 	public T evaluatePerm(final List<String> indices, final List<String> types,
 			final InetAddress hostAddress, final UserRoleCallback callback)
-			throws MalformedConfigurationException {
+					throws MalformedConfigurationException {
 
 		final List<Perm<T>> perms = new ArrayList<Perm<T>>();
 
@@ -159,7 +159,7 @@ public abstract class PermEvaluator<T> {
 			if (!p.users.isEmpty()
 					&& !p.users.contains("*")
 					&& (callback == null || callback.getRemoteuser() == null || !p.users
-							.contains(callback.getRemoteuser()))) {
+					.contains(callback.getRemoteuser()))) {
 				log.debug("User " + callback.getRemoteuser()
 						+ " does not match, so skip this permission");
 				continue permloop;
@@ -192,9 +192,9 @@ public abstract class PermEvaluator<T> {
 			if (!p.inetAddresses.contains("*") && !p.inetAddresses.isEmpty()) {
 				for (final String pinetAddress : p.inetAddresses) {
 					if (new WildcardIpOrHostname(pinetAddress)
-							.equals(clientHostName)
-							|| new WildcardIpOrHostname(pinetAddress)
-									.equals(clientHostIp)) {
+					.equals(clientHostName)
+					|| new WildcardIpOrHostname(pinetAddress)
+					.equals(clientHostIp)) {
 
 						log.debug("Host adress " + pinetAddress + " match");
 						_host = pinetAddress;
@@ -272,14 +272,14 @@ public abstract class PermEvaluator<T> {
 			return (this.inetAddresses.isEmpty() ? true : this.inetAddresses
 					.size() == 1 && "*".equals(this.inetAddresses.get(0)))
 					&& (this.users.isEmpty() ? true : this.users.size() == 1
-							&& "*".equals(this.users.get(0)))
+					&& "*".equals(this.users.get(0)))
 					&& (this.roles.isEmpty() ? true : this.roles.size() == 1
-							&& "*".equals(this.roles.get(0)))
+					&& "*".equals(this.roles.get(0)))
 					&& (this.types.isEmpty() ? true : this.types.size() == 1
-							&& "*".equals(this.types.get(0)))
+					&& "*".equals(this.types.get(0)))
 					&& (this.indices.isEmpty() ? true
 							: this.indices.size() == 1
-									&& "*".equals(this.indices.get(0)));
+							&& "*".equals(this.indices.get(0)));
 		}
 
 		public void addInetAddress(final String inetAddress) {

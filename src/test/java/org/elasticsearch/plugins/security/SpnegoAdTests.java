@@ -1,14 +1,7 @@
 package org.elasticsearch.plugins.security;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLDecoder;
-import java.security.PrivilegedExceptionAction;
-import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -22,16 +15,8 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.ModificationItem;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.NameCallback;
-import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.kerberos.KerberosPrincipal;
-import javax.security.auth.login.LoginContext;
 
-import net.sf.michaelo.tomcat.utils.Base64;
 import net.sourceforge.spnego.SpnegoHttpURLConnection;
 
 import org.apache.commons.io.IOUtils;
@@ -55,7 +40,6 @@ import org.apache.directory.server.core.api.DirectoryService;
 import org.apache.directory.server.core.integ.FrameworkRunner;
 import org.apache.directory.server.core.jndi.CoreContextFactory;
 import org.apache.directory.server.core.kerberos.KeyDerivationInterceptor;
-import org.apache.directory.server.i18n.I18n;
 import org.apache.directory.server.kerberos.kdc.KdcServer;
 import org.apache.directory.server.ldap.LdapServer;
 import org.apache.directory.server.ldap.handlers.sasl.cramMD5.CramMd5MechanismHandler;
@@ -64,12 +48,6 @@ import org.apache.directory.server.ldap.handlers.sasl.gssapi.GssapiMechanismHand
 import org.apache.directory.server.ldap.handlers.sasl.ntlm.NtlmMechanismHandler;
 import org.apache.directory.server.ldap.handlers.sasl.plain.PlainMechanismHandler;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
-import org.ietf.jgss.GSSContext;
-import org.ietf.jgss.GSSCredential;
-import org.ietf.jgss.GSSException;
-import org.ietf.jgss.GSSManager;
-import org.ietf.jgss.GSSName;
-import org.ietf.jgss.Oid;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,9 +56,9 @@ import org.junit.runner.RunWith;
 @RunWith(FrameworkRunner.class)
 @CreateDS(name = "SaslGssapiBindITest-class", partitions = { @CreatePartition(name = "example", suffix = "dc=example,dc=com", contextEntry = @ContextEntry(entryLdif = "dn: dc=example,dc=com\n"
 		+ "dc: example\n" + "objectClass: top\n" + "objectClass: domain\n\n"), indexes = {
-		@CreateIndex(attribute = "objectClass"),
-		@CreateIndex(attribute = "dc"), @CreateIndex(attribute = "ou") }) }, additionalInterceptors = { KeyDerivationInterceptor.class })
-@CreateLdapServer(transports = { @CreateTransport(protocol = "LDAP", port = 6389) }, saslHost = "localhost", saslPrincipal = "ldap/localhost@EXAMPLE.COM", saslMechanisms = {
+	@CreateIndex(attribute = "objectClass"),
+	@CreateIndex(attribute = "dc"), @CreateIndex(attribute = "ou") }) }, additionalInterceptors = { KeyDerivationInterceptor.class })
+@CreateLdapServer(allowAnonymousAccess=true, transports = { @CreateTransport(protocol = "LDAP", port = 6389) }, saslHost = "localhost", saslPrincipal = "ldap/localhost@EXAMPLE.COM", saslMechanisms = {
 		@SaslMechanism(name = SupportedSaslMechanisms.PLAIN, implClass = PlainMechanismHandler.class),
 		@SaslMechanism(name = SupportedSaslMechanisms.CRAM_MD5, implClass = CramMd5MechanismHandler.class),
 		@SaslMechanism(name = SupportedSaslMechanisms.DIGEST_MD5, implClass = DigestMd5MechanismHandler.class),
@@ -92,7 +70,7 @@ import org.junit.runner.RunWith;
 		@CreateTransport(protocol = "TCP", port = 6088, address = "localhost") })
 public class SpnegoAdTests extends SpnegoTests {
 
-	public static CallbackHandler getUsernamePasswordHandler(
+	/*public static CallbackHandler getUsernamePasswordHandler(
 			final String username, final String password) {
 
 		final CallbackHandler handler = new CallbackHandler() {
@@ -152,10 +130,10 @@ public class SpnegoAdTests extends SpnegoTests {
 
 		final URLConnection uc = url.openConnection();
 		uc.setRequestProperty("Authorization",
-				"Negotiate " + Base64.encode(data));
+				"Negotiate " + org.apache.tomcat.util.codec.binary.Base64.encodeBase64String(data));
 		uc.connect();
-		data = Base64
-				.decode(uc.getHeaderField("WWW-Authenticate").split(" ")[1]);
+		data = org.apache.tomcat.util.codec.binary.Base64
+				.decodeBase64(uc.getHeaderField("WWW-Authenticate").split(" ")[1]);
 
 		data = context.initSecContext(data, 0, data.length);
 		if (!context.isEstablished()) {
@@ -172,7 +150,7 @@ public class SpnegoAdTests extends SpnegoTests {
 				"java.security.auth.login.config", "login.conf");
 		this.initGSS(url);
 
-	}
+	}*/
 
 	// public static final String AUTHN_HEADER = "WWW-Authenticate";
 	// public static final String AUTHZ_HEADER = "Authorization";
@@ -225,66 +203,103 @@ public class SpnegoAdTests extends SpnegoTests {
 	protected Properties getProperties() {
 		final Properties props = new Properties();
 		props.putAll(super.getProperties());
-		props.setProperty("security.kerberosimpl", "spnegoad");
-		props.setProperty("security.spnegoad.isLdapAD", "false");
-		props.setProperty("security.spnegoad.ldapurls", "ldap://localhost:6389");
+		props.setProperty("security.kerberos.mode", "spnegoad");
+		props.setProperty("security.authorization.ldap.isactivedirectory", "false");
+		props.setProperty("security.authorization.ldap.ldapurls", "ldap://localhost:6389");
 
-		props.setProperty("security.module.actionpathfilter.enabled", "false");
-		props.setProperty("security.module.dls.enabled", "false");
+		props.setProperty("security.authorization.ldap.connectionname", "uid=admin,ou=system");
+		props.setProperty("security.authorization.ldap.connectionpassword", "secret");
+		props.setProperty("security.authorization.ldap.usersearch", "uid={0}");
+		props.setProperty("security.authorization.ldap.userbase", "ou=users,dc=example,dc=com");
+		props.setProperty("security.authorization.ldap.rolebase", "ou=groups,dc=example,dc=com");
+
+
+		props.setProperty("security.kerberos.login.conf.path", SecurityUtil.getAbsoluteFilePathFromClassPath("login.conf").getAbsolutePath());
+		props.setProperty("security.kerberos.krb5.conf.path", SecurityUtil.getAbsoluteFilePathFromClassPath("krb5.conf").getAbsolutePath());
+
+		//props.setProperty("security.module.actionpathfilter.enabled", "false");
+		//props.setProperty("security.module.dls.enabled", "false");
 
 		return props;
 	}
 
-	@Override
-	protected Map<String, Object> getHeaderMap() {
-		final Map<String, Object> map = new HashMap<String, Object>();
-		map.putAll(super.getHeaderMap());
-		return map;
-	}
+
 
 	public SpnegoAdTests() {
 		super();
 
-		try {
-			final String krbConfPath = URLDecoder.decode(this.getClass()
-					.getClassLoader().getResource("krb5.conf").getFile(),
-					"UTF-8");
 
-			if (!new java.io.File(krbConfPath).exists()) {
-				throw new RuntimeException(krbConfPath + " does not exist");
-			}
+	}
 
-			System.setProperty("java.security.krb5.conf", krbConfPath);
-			System.setProperty("sun.security.krb5.debug", "true");
-		} catch (final UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		}
+
+	@Override
+	protected String [] getUserPass()
+	{
+		return new String[]{"hnelson", "secret"};
 	}
 
 	@Test
-	public void testSpnegoHttpCon() throws Exception {
+	public void spneghc() throws Exception {
 
 		kdcServer.getConfig().setPaEncTimestampRequired(false);
 
-		// System.setProperty("javax.security.auth.useSubjectCredsOnly",
-		// "true");
+		executeIndex("dls_default_test_allowall.json",
+				"securityconfiguration", "dlspermissions", "default", true);
 
-		SecurityUtil.setSystemPropertyToAbsoluteFilePathFromClassPath(
-				"java.security.auth.login.config", "login.conf");
-		final net.sourceforge.spnego.SpnegoHttpURLConnection hcon = new SpnegoHttpURLConnection(
-				"spnego-client", "hnelson", "secret");
-
-		hcon.connect(new URL("http://localhost:8080"));
-
-		Assert.assertTrue(hcon.getResponseCode() == 200);
-
-		this.log.debug(IOUtils.toString(hcon.getInputStream()));
+		executeIndex("dls_default_test_allowall.json",
+				"securityconfiguration", "dlspermissions", "default", true);
 
 	}
 
+	@Test
+	public void donothing() throws Exception {
+
+	}
+
+
+	@Test
+	public void queryGETUrlTest() throws Exception {
+
+		if(isSSL()) {
+			return;
+		}
+
+		executeIndex("dls_default_test_allowall.json",
+				"securityconfiguration", "dlspermissions", "default", true);
+
+		executeIndex("fls_test_normal.json", "securityconfiguration",
+				"dlspermissions", "dlspermissions", true);
+
+		executeIndex("test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
+		executeIndex("dummy_content.json", "twitter",
+				"tweet", "1", true);
+
+
+
+		final net.sourceforge.spnego.SpnegoHttpURLConnection hcon = new SpnegoHttpURLConnection(
+				"spnego-client", "hnelson@EXAMPLE.COM", "secret");
+
+		hcon.requestCredDeleg(true);
+
+
+		hcon.connect(new URL(getServerUri() + "/_search"));
+		//hcon.connect(new URL(getServerUri() + "/%5Fsearch"));
+
+		Assert.assertTrue(hcon.getResponseCode() == 200);
+
+		log.debug(IOUtils.toString(hcon.getInputStream()));
+
+
+
+
+
+	}
+
+
+
 	public static String fixServicePrincipalName(String servicePrincipalName,
 			final Dn serviceEntryDn, final LdapServer ldapServer)
-			throws LdapException {
+					throws LdapException {
 		final KerberosPrincipal servicePrincipal = new KerberosPrincipal(
 				servicePrincipalName, KerberosPrincipal.KRB_NT_SRV_HST);
 		servicePrincipalName = servicePrincipal.getName();
@@ -297,7 +312,7 @@ public class SpnegoAdTests extends SpnegoTests {
 			modifyRequest.replace("userPassword", "randall");
 			modifyRequest.replace("krb5PrincipalName", servicePrincipalName);
 			ldapServer.getDirectoryService().getAdminSession()
-					.modify(modifyRequest);
+			.modify(modifyRequest);
 		}
 
 		return servicePrincipalName;
@@ -328,7 +343,7 @@ public class SpnegoAdTests extends SpnegoTests {
 		// -------------------------------------------------------------------
 
 		// check if krb5kdc is disabled
-		final Attributes krb5kdcAttrs = this.schemaRoot
+		final Attributes krb5kdcAttrs = schemaRoot
 				.getAttributes("cn=Krb5kdc");
 		boolean isKrb5KdcDisabled = false;
 
@@ -342,7 +357,7 @@ public class SpnegoAdTests extends SpnegoTests {
 			final Attribute disabled = new BasicAttribute("m-disabled");
 			final ModificationItem[] mods = new ModificationItem[] { new ModificationItem(
 					DirContext.REMOVE_ATTRIBUTE, disabled) };
-			this.schemaRoot.modifyAttributes("cn=Krb5kdc", mods);
+			schemaRoot.modifyAttributes("cn=Krb5kdc", mods);
 		}
 
 		// Get a context, create the ou=users subcontext, then create the 3
@@ -356,24 +371,32 @@ public class SpnegoAdTests extends SpnegoTests {
 		env.put(Context.SECURITY_CREDENTIALS, "secret");
 		env.put(Context.SECURITY_AUTHENTICATION, "simple");
 
-		this.ctx = new InitialDirContext(env);
+		ctx = new InitialDirContext(env);
 
-		attrs = this.getOrgUnitAttributes("users");
-		final DirContext users = this.ctx.createSubcontext("ou=users", attrs);
+		attrs = getOrgUnitAttributes("users");
+		final DirContext users = ctx.createSubcontext("ou=users", attrs);
 
-		attrs = this.getPrincipalAttributes("Nelson", "Horatio Nelson",
+		attrs = getPrincipalAttributes("Nelson", "Horatio Nelson",
 				"hnelson", "secret", "hnelson@EXAMPLE.COM");
 		users.createSubcontext("uid=hnelson", attrs);
 
-		attrs = this.getPrincipalAttributes("Service", "KDC Service", "krbtgt",
+		attrs = getPrincipalAttributes("hNelson", "Horatio hNelson",
+				"nelsonh", "secret", "nelsonh@EXAMPLE.COM");
+		users.createSubcontext("uid=nelsonh", attrs);
+
+		attrs = getPrincipalAttributes("Einstein", "Albert Einstein",
+				"aeinstein", "aeinstein", "aeinstein@EXAMPLE.COM");
+		users.createSubcontext("uid=aeinstein", attrs);
+
+		attrs = getPrincipalAttributes("Service", "KDC Service", "krbtgt",
 				"secret", "krbtgt/EXAMPLE.COM@EXAMPLE.COM");
 		users.createSubcontext("uid=krbtgt", attrs);
 
-		attrs = this.getPrincipalAttributes("Service", "LDAP Service", "ldap",
+		attrs = getPrincipalAttributes("Service", "LDAP Service", "ldap",
 				"randall", servicePrincipalName);
 		users.createSubcontext("uid=ldap", attrs);
 
-		attrs = this.getPrincipalAttributes("Service", "HTTP Service", "http",
+		attrs = getPrincipalAttributes("Service", "HTTP Service", "http",
 				"httppwd", "HTTP/localhost@EXAMPLE.COM");
 		users.createSubcontext("uid=http", attrs);
 
@@ -383,13 +406,18 @@ public class SpnegoAdTests extends SpnegoTests {
 		 * Smith,ou=people,dc=example,dc=com
 		 */
 
-		attrs = this.getOrgUnitAttributes("groups");
-		final DirContext groups = this.ctx.createSubcontext("ou=groups", attrs);
+		attrs = getOrgUnitAttributes("groups");
+		final DirContext groups = ctx.createSubcontext("ou=groups", attrs);
 
-		attrs = this.getGroupAttributes(
+		attrs = getGroupAttributes(
 				"uid=hnelson,ou=users,dc=example,dc=com", "dummy ldap role",
 				"dummy_ldap");
 		groups.createSubcontext("cn=dummy_ldap", attrs);
+
+		attrs = getGroupAttributes(
+				"uid=nelsonh,ou=users,dc=example,dc=com", "dummy ssl ldap role",
+				"dummy_sslldap");
+		groups.createSubcontext("cn=dummy_sslldap", attrs);
 	}
 
 	/**
@@ -491,25 +519,20 @@ public class SpnegoAdTests extends SpnegoTests {
 		final Hashtable<String, Object> envFinal = new Hashtable<String, Object>(
 				env);
 		envFinal.put(Context.PROVIDER_URL, ServerDNConstants.SYSTEM_DN);
-		this.sysRoot = new InitialLdapContext(envFinal, null);
+		sysRoot = new InitialLdapContext(envFinal, null);
 
 		envFinal.put(Context.PROVIDER_URL, "");
-		this.rootDse = getService().getAdminSession();
+		rootDse = getService().getAdminSession();
 
 		envFinal.put(Context.PROVIDER_URL, SchemaConstants.OU_SCHEMA);
-		this.schemaRoot = new InitialLdapContext(envFinal, null);
+		schemaRoot = new InitialLdapContext(envFinal, null);
 	}
-
+	/*
 	private class CallbackHandlerBean implements CallbackHandler {
 		private final String name;
 		private final String password;
 
-		/**
-		 * Creates a new instance of CallbackHandlerBean.
-		 * 
-		 * @param name
-		 * @param password
-		 */
+
 		public CallbackHandlerBean(final String name, final String password) {
 			this.name = name;
 			this.password = password;
@@ -535,5 +558,5 @@ public class SpnegoAdTests extends SpnegoTests {
 				}
 			}
 		}
-	}
+	}*/
 }

@@ -28,6 +28,36 @@ public class SecurityUtil {
 
 	}
 
+	public static File getAbsoluteFilePathFromClassPath(
+			final String fileNameFromClasspath) {
+
+		File jaasConfigFile = null;
+		final URL jaasConfigURL = SecurityUtil.class.getClassLoader()
+				.getResource(fileNameFromClasspath);
+		if (jaasConfigURL != null) {
+			try {
+				jaasConfigFile = new File(URLDecoder.decode(
+						jaasConfigURL.getFile(), "UTF-8"));
+			} catch (final UnsupportedEncodingException e) {
+				return null;
+			}
+
+			if (jaasConfigFile.exists() && jaasConfigFile.canRead()) {
+				return jaasConfigFile;
+			} else {
+				log.error(
+						"Cannot read from {}, maybe the file does not exists? ",
+						jaasConfigFile.getAbsolutePath());
+			}
+
+		} else {
+			log.error("Failed to load " + fileNameFromClasspath);
+		}
+
+		return null;
+
+	}
+
 	public static boolean setSystemPropertyToAbsoluteFilePathFromClassPath(
 			final String property, final String fileNameFromClasspath) {
 		if (System.getProperty(property) == null) {
@@ -222,13 +252,13 @@ public class SecurityUtil {
 	}
 
 	public static String[] BUILT_IN_ADMIN_COMMANDS = new String[] { "_cluster",
-			"_settings", "_close", "_open", "_template", "_status", "_stats",
-			"_segments", "_cache", "_gateway", "_optimize", "_flush",
-			"_warmer", "_refresh", "_shutdown", "_nodes" };
+		"_settings", "_close", "_open", "_template", "_status", "_stats",
+		"_segments", "_cache", "_gateway", "_optimize", "_flush",
+		"_warmer", "_refresh", "_shutdown", "_nodes" };
 	public static String[] BUILT_IN_WRITE_COMMANDS = new String[] { "_create",
-			"_update", "_bulk", "_mapping", "_aliases", "_analyze" };
+		"_update", "_bulk", "_mapping", "_aliases", "_analyze" };
 	public static String[] BUILT_IN_READ_COMMANDS = new String[] { "_search",
-			"_msearch" };
+	"_msearch" };
 
 	private static boolean stringContainsItemFromListAsCommand(
 			final String inputString, final String[] items) {

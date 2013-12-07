@@ -7,7 +7,7 @@ public class TomcatHttpServerTransportModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		this.bind(HttpServerTransport.class)
-				.to(TomcatHttpServerTransport.class).asEagerSingleton();
+		.to(TomcatHttpServerTransport.class).asEagerSingleton();
 	}
 
 }

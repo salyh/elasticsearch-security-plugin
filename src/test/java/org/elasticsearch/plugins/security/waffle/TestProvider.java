@@ -15,7 +15,7 @@ public class TestProvider implements SecurityFilterProvider {
 	private MockWindowsAuthProvider _auth = null;
 
 	public TestProvider(final IWindowsAuthProvider auth) {
-		this._auth = new MockWindowsAuthProvider();
+		_auth = new MockWindowsAuthProvider();
 		// System.out.println("ctor()");
 
 	}
@@ -37,7 +37,7 @@ public class TestProvider implements SecurityFilterProvider {
 			final HttpServletResponse response) throws IOException {
 		// TODO Auto-generated method stub
 		// System.out.println("auth guest");
-		return this._auth.logonUser("Guest", "");
+		return _auth.logonUser("Guest", "");
 	}
 
 	@Override

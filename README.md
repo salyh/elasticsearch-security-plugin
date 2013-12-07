@@ -7,11 +7,11 @@ elasticsearch-security-plugin
 This plugin adds http/rest security functionality to Elasticsearch in kind of separate modules.
 Instead of Netty a embedded Tomcat 7 is used to process http/rest requests. 
 
-Currently for user based authentication and authorization 
-Kerberos and NTLM are supported through 3rd party library waffle (only on windows servers). 
-For UNIX servers Kerberos is supported through 3rd party library tomcatspnegoad (Works with any kerberos implementation. For authorization either Active Directory and generic LDAP is supported).
+Currently for user based authentication and authorization Kerberos/SPNEGO and NTLM are supported through 3rd party library waffle (only on windows servers). 
+For UNIX servers Kerberos/SPNEGO is supported through tomcat build in SPNEGO Valve (Works with any Kerberos implementation. For authorization either Active Directory and generic LDAP is supported).
+PKI/SSL client certificate authentication is also supported (CLIENT-CERT method). SSL/TLS is also supported without client authentication.
 
-You can use this plugin also without Kerberos/NTLM but then only host based authentication is available.
+You can use this plugin also without Kerberos/NTLM/PKI but then only host based authentication is available.
 <!--
 [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)-->
 
@@ -20,7 +20,7 @@ As of now two security modules are implemented:
 * Document level security (dls): Restrict actions on document level like who is allowed to query for which fields within a document
 
 <h3>Installation</h3> 
-(Until the first release is out you have to build this plugin yourself with maven)
+(Until the first release is out you have to build this plugin yourself with maven or download from the github release page and install manually)
 
 Build yourself:
 * Install maven
@@ -42,21 +42,35 @@ Enable the security plugin
 * ``script.disable_dynamic: true`` Dynamic scripts are unsafe and can potentially tamper this plugin
 * ``http.port: 9200`` Define exactly one port, Port ranges are not permitted
 
-Setup kerberos
-* ``security.kerberosimpl: waffle|spnegoad|none`` Kerberos implementation
+Setup Kerberos
+* ``security.kerberos.mode: waffle|spnegoad|none`` Kerberos implementation (spnegoad is tomcat-built in Kerberos/SPNEGO support)
 
 If you use spnegoad then you must provide the following configuration parameters:
-* ``security.spnegoad.ldapurls: ldap://myldaphost:389`` Ldap Server
-* ``security.spnegoad.isactivedirectory: true`` true if your ldap server is AD, false otherwise
-* ``security.spnegoad.login.conf.path: c:\path\to\login.conf`` JAAS login modules configuration
-* ``security.spnegoad.krb5.conf.path: /path/to/krb5.conf`` Kerberos configuration file
+* ``security.authorization.ldap.ldapurls: ldap://myldaphost:389`` Ldap Server
+* ``security.kerberos.login.conf.path: c:\path\to\login.conf`` JAAS login modules configuration
+* ``security.kerberos.krb5.conf.path: /path/to/krb5.conf`` Kerberos configuration file
+* ``security.authorization.ldap.connectionname: uid=admin,ou=system`` Low priv login to ldap server (Omit for anonymous authentication).
+* ``security.authorization.ldap.connectionpassword: secret`` Password for low priv login to ldap server (Omit for anonymous authentication). No encryption here, this is plaintext!
 
 If you use spnegoad and not Active Directory you may want configure your LDAP layout
-* ``security.spnegoad.ldap.usersearchbase: ""`` (Default is Root DSE)
-* ``security.spnegoad.ldap.usersearchpattern: Default is (&(objectClass=krb5principal) (krb5PrincipalName={0}))`` 0=fullqualified kerberos principal, 1=short kerberos principal
-* ``security.spnegoad.ldap.groupssearchbase: ""`` (Default is Root DSE)
-* ``security.spnegoad.ldap.groupssearchpattern: Default is (&(objectClass=groupofnames)(member={0}))`` 0=DN of user, 1=fullqualified kerberos principal, 2=short kerberos principal
-* ``security.spnegoad.ldap.rolenameattribute: cn`` (Default is cn)
+* ``security.authorization.ldap.userbase: ""`` (Default is Root DSE)
+* ``security.authorization.ldap.usersearch: (sAMAccountName={0})`` Default is (sAMAccountName={0})
+* ``security.authorization.ldap.rolebase: ""`` (Default is Root DSE)
+* ``security.authorization.ldap.rolesearch: (member={0})`` Default is (member={0})
+* ``security.authorization.ldap.rolename: cn`` (Default is cn)
+
+Optionally enable SSL/TLS
+* ``security.ssl.enabled: true`` Enable SSL
+* ``security.ssl.keystorefile: /path/to/keystore`` Keystore for private and public server certificates
+* ``security.ssl.keystorepass: changeit`` Password for the keystore
+* ``security.ssl.keystoretype: JKS`` Keystoretype (either JKS or PKCS12)
+
+If SSL is enabled you can use PKI/Client certificates for authentication
+* ``security.ssl.clientauth.enabled: true`` Enable PKI/Client certificates for authentication
+* ``security.ssl.clientauth.truststorefile: /path/to/truststore`` Keystore (truststore) for public client certificates which the server should trust
+* ``security.ssl.clientauth.truststorepass: changeit`` Password for the truststore
+* ``security.ssl.clientauth.truststoretype: JKS`` (either JKS or PKCS12)
+* ``security.ssl.userattribute: CN`` Name of the attribute from the client certificate user name which denotes the username for further authentication/authorization
 
 Optionally enable XFF 
 * ``security.http.xforwardedfor.header: X-Forwarded-For`` Enable XFF
@@ -380,8 +394,7 @@ and uses (documents of types t1 or t2 or both)<br>
 TODO<br>
 * http://tomcat.apache.org/tomcat-7.0-doc/api/org/apache/catalina/valves/RemoteIpValve.html
 * Check restict highlighting http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-request-highlighting.html
-* enforce script.disable_dynamic: true
+* Enforce script.disable_dynamic: true
 * Check restrict bulk requests and responses
-* User Tomcat JNDIRealm code for finding users/roles when not using AD
 * Add "at least authenticated" user rule
 * Provide rest api endpoint for displaying current security rules/status

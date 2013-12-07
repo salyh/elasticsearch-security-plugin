@@ -14,7 +14,7 @@ public class SecurityPlugin extends AbstractPlugin {
 	private final ESLogger log = Loggers.getLogger(this.getClass());
 
 	public SecurityPlugin() {
-		this.log.debug("Starting Security Plugin");
+		log.debug("Starting Security Plugin");
 	}
 
 	@SuppressWarnings("rawtypes")

@@ -25,6 +25,7 @@ import org.elasticsearch.plugins.security.service.permission.DlsPermission;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestResponse;
+import org.elasticsearch.rest.StringRestResponse;
 import org.elasticsearch.rest.XContentRestResponse;
 
 public class TomcatHttpServerRestChannel implements HttpChannel {
@@ -50,42 +51,50 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		this.securityService = securityService;
 		this.restRequest = restRequest;
 		this.resp = resp;
-		this.latch = new CountDownLatch(1);
+		latch = new CountDownLatch(1);
 
-		this.enableDls = securityService.getSettings().getAsBoolean(
+		enableDls = securityService.getSettings().getAsBoolean(
 				"security.module.dls.enabled", true);
 
 	}
 
 	public void await() throws InterruptedException {
-		this.latch.await();
+		latch.await();
 	}
 
 	public Exception sendFailure() {
-		return this.sendFailure;
+		return sendFailure;
 	}
 
 	@Override
 	public void sendResponse(final RestResponse response) {
 
-		this.resp.setContentType(response.contentType());
-		this.resp.addHeader("Access-Control-Allow-Origin", "*");
+		resp.setContentType(response.contentType());
+		resp.addHeader("Access-Control-Allow-Origin", "*");
 		if (response.status() != null) {
-			this.resp.setStatus(response.status().getStatus());
+			resp.setStatus(response.status().getStatus());
 		} else {
-			this.resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
-		if (this.restRequest.method() == RestRequest.Method.OPTIONS) {
+		if (restRequest.method() == RestRequest.Method.OPTIONS) {
 			// also add more access control parameters
-			this.resp.addHeader("Access-Control-Max-Age", "1728000");
-			this.resp.addHeader("Access-Control-Allow-Methods", "PUT, DELETE");
-			this.resp.addHeader("Access-Control-Allow-Headers",
+			resp.addHeader("Access-Control-Max-Age", "1728000");
+			resp.addHeader("Access-Control-Allow-Methods", "PUT, DELETE");
+			resp.addHeader("Access-Control-Allow-Headers",
 					"X-Requested-With");
 		}
 		try {
 
-			final XContentBuilder modifiedContent = this.enableDls ? this
-					.applyDls(response) : ((XContentRestResponse) response)
+			log.debug("RestResponse class " +response.getClass());
+
+			if(!(response instanceof XContentRestResponse))
+			{
+				log.debug("res " + new String( ((StringRestResponse)response).content()));
+
+				//TODO write out
+			}
+
+			final XContentBuilder modifiedContent = enableDls ? applyDls(response) : ((XContentRestResponse) response)
 					.builder();
 
 			int contentLength = modifiedContent.bytes().length();
@@ -96,9 +105,9 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 				contentLength += response.suffixContentLength();
 			}
 
-			this.resp.setContentLength(contentLength);
+			resp.setContentLength(contentLength);
 
-			final ServletOutputStream out = this.resp.getOutputStream();
+			final ServletOutputStream out = resp.getOutputStream();
 			if (response.prefixContent() != null) {
 
 				out.write(response.prefixContent(), 0,
@@ -115,24 +124,27 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 			}
 			out.close();
 		} catch (final Exception e) {
-			this.log.error(e.toString(), e);
-			this.sendFailure = e;
+			log.error(e.toString(), e);
+			sendFailure = e;
 		} finally {
-			this.latch.countDown();
+			latch.countDown();
 		}
 	}
 
 	protected XContentBuilder applyDls(final RestResponse response)
 			throws IOException, MalformedConfigurationException {
 
+
+
+
 		final XContentRestResponse xres = (XContentRestResponse) response;
 
-		final List<String> indices = SecurityUtil.getIndices(this.restRequest);
-		if (indices.contains(this.securityService
+		final List<String> indices = SecurityUtil.getIndices(restRequest);
+		if (indices.contains(securityService
 				.getSecurityConfigurationIndex())) {
 
-			if (this.securityService
-					.getHostAddressFromRequest(this.restRequest)
+			if (securityService
+					.getHostAddressFromRequest(restRequest)
 					.getHostAddress().equals("127.0.0.1")) {
 				return xres.builder();
 
@@ -148,27 +160,27 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 			return xres.builder();
 		}
 
-		if (!this.restRequest.path().contains("_search")
-				&& !this.restRequest.path().contains("_msearch")) {
+		if (!restRequest.path().contains("_search")
+				&& !restRequest.path().contains("_msearch")) {
 
 			return xres.builder();
 		}
 
 		final List<String> dlsTokens = new PermDlsEvaluator(
-				this.securityService.getXContentSecurityConfiguration(
+				securityService.getXContentSecurityConfiguration(
 						"dlspermissions", "dlspermissions")).evaluatePerm(
-				SecurityUtil.getIndices(this.restRequest),
-				SecurityUtil.getTypes(this.restRequest),
-				this.securityService
-						.getHostAddressFromRequest(this.restRequest),
-				new TomcatUserRoleCallback(this.restRequest
-						.getHttpServletRequest()));
+								SecurityUtil.getIndices(restRequest),
+								SecurityUtil.getTypes(restRequest),
+								securityService
+								.getHostAddressFromRequest(restRequest),
+								new TomcatUserRoleCallback(restRequest
+										.getHttpServletRequest(),securityService.getSettings().get("security.ssl.userattribute")));
 
-		this.log.debug("dls tokens: " + dlsTokens);
+		log.debug("dls tokens: " + dlsTokens);
 
 		// this.log.debug("orig json: " + xres.builder().string());
 
-		final List<DlsPermission> perms = this.securityService
+		final List<DlsPermission> perms = securityService
 				.parseDlsPermissions(xres.builder().bytes());
 
 		// TODO check against the tokens
@@ -197,12 +209,12 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 
 		}
 
-		this.log.debug(fields.toString());
+		log.debug(fields.toString());
 
 		final Map<String, Object> filteredSource = XContentMapValues.filter(
 				mapTuple.v2(), fields.toArray(new String[0]), null);
 
-		this.log.debug("filteredSource " + filteredSource);
+		log.debug("filteredSource " + filteredSource);
 
 		final XContentBuilder sourceToBeReturned = XContentFactory
 				.contentBuilder(mapTuple.v1()).map(filteredSource);

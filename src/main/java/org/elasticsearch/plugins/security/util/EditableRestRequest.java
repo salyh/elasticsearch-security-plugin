@@ -20,13 +20,13 @@ public class EditableRestRequest extends AbstractRestRequest {
 	public EditableRestRequest(final RestRequest innerRestquest) {
 
 		this.innerRestquest = innerRestquest;
-		this.content = innerRestquest.content();
-		this.params = innerRestquest.params();
-		this.method = innerRestquest.method();
-		this.uri = innerRestquest.uri();
-		this.rawPath = innerRestquest.rawPath();
-		this.hasContent = innerRestquest.hasContent();
-		this.contentUnsafe = innerRestquest.contentUnsafe();
+		content = innerRestquest.content();
+		params = innerRestquest.params();
+		method = innerRestquest.method();
+		uri = innerRestquest.uri();
+		rawPath = innerRestquest.rawPath();
+		hasContent = innerRestquest.hasContent();
+		contentUnsafe = innerRestquest.contentUnsafe();
 
 	}
 
@@ -60,65 +60,65 @@ public class EditableRestRequest extends AbstractRestRequest {
 
 	@Override
 	public Method method() {
-		return this.method;
+		return method;
 	}
 
 	@Override
 	public String uri() {
-		return this.uri;
+		return uri;
 	}
 
 	@Override
 	public String rawPath() {
 
-		return this.rawPath;
+		return rawPath;
 	}
 
 	@Override
 	public boolean hasContent() {
 
-		return this.hasContent;
+		return hasContent;
 	}
 
 	@Override
 	public boolean contentUnsafe() {
 
-		return this.contentUnsafe;
+		return contentUnsafe;
 	}
 
 	@Override
 	public BytesReference content() {
 
-		return this.content;
+		return content;
 	}
 
 	@Override
 	public String header(final String name) {
 
-		return this.innerRestquest.header(name);
+		return innerRestquest.header(name);
 	}
 
 	@Override
 	public boolean hasParam(final String key) {
 
-		return this.params.containsKey(key);
+		return params.containsKey(key);
 	}
 
 	@Override
 	public String param(final String key) {
 
-		return this.params.get(key);
+		return params.get(key);
 	}
 
 	@Override
 	public Map<String, String> params() {
 
-		return this.params;
+		return params;
 	}
 
 	@Override
 	public String param(final String key, final String defaultValue) {
-		final String value = this.params.get(key);
+		final String value = params.get(key);
 		if (value == null) {
 			return defaultValue;
 		}
