@@ -16,6 +16,7 @@
 		<elasticsearch.version>0.90.6</elasticsearch.version>
 		<tomcat.version>7.0.47</tomcat.version>
 		<apache.ds.version>2.0.0-M15</apache.ds.version>
+		<path.delim>\\</path.delim>
 	</properties>
 
 	<licenses>
@@ -80,7 +81,6 @@
 		<dependency>
 			<groupId>com.github.tlrx</groupId>
 			<artifactId>elasticsearch-test</artifactId>
-			<!-- <version>${elasticsearch.version}</version> -->
 			<version>${elasticsearch.version}</version>
 			<scope>test</scope>
 		</dependency>
@@ -95,7 +95,7 @@
 			<groupId>log4j</groupId>
 			<artifactId>log4j</artifactId>
 			<version>1.2.17</version>
-			
+
 		</dependency>
 
 		<dependency>
@@ -134,22 +134,13 @@
 			<version>4.3</version>
 			<scope>test</scope>
 		</dependency>
-<!--
-<dependency>
-		<groupId>org.codehaus.jackson</groupId>
-		<artifactId>jackson-mapper-asl</artifactId>
-		<version>1.9.13</version>
-	</dependency>
-		<dependency> <groupId>org.apache.hadoop</groupId> <artifactId>hadoop-auth</artifactId> 
-			<version>2.2.0</version> </dependency> -->
 
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-core</artifactId>
 			<version>${tomcat.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>org.apache.tomcat.embed</groupId> <artifactId>tomcat-embed-logging-juli</artifactId> 
-			<version>${tomcat.version}</version> </dependency> -->
+
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-logging-log4j</artifactId>
@@ -162,36 +153,30 @@
 			<artifactId>waffle-tomcat7</artifactId>
 			<version>1.5</version>
 		</dependency>
-		<!-- 
+
 		<dependency>
-  <groupId>net.sf.michael-o.tomcat</groupId>
-  <artifactId>tomcat-authnz-spnego-ad-tc7</artifactId>
-  <version>0.9.1</version>
-</dependency>-->
-		
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+
 		<dependency>
-    <groupId>com.jayway.jsonpath</groupId>
-    <artifactId>json-path</artifactId>
-    <version>0.9.1</version>
-</dependency>
+			<groupId>com.jayway.jsonpath</groupId>
+			<artifactId>json-path-assert</artifactId>
+			<version>0.9.1</version>
+			<scope>test</scope>
+		</dependency>
 
-<dependency>
-    <groupId>com.jayway.jsonpath</groupId>
-    <artifactId>json-path-assert</artifactId>
-    <version>0.9.1</version>
-    <scope>test</scope>
-</dependency>
-
-<dependency>
-    <groupId>net.sourceforge.spnego</groupId>
-    <artifactId>spnego</artifactId>
-    <version>7.0</version>
-    <scope>test</scope>
-</dependency>
+		<dependency>
+			<groupId>net.sourceforge.spnego</groupId>
+			<artifactId>spnego</artifactId>
+			<version>7.0</version>
+			<scope>test</scope>
+		</dependency>
 
 
 
-<dependency>
+		<dependency>
 			<groupId>org.apache.directory.server</groupId>
 			<artifactId>apacheds-all</artifactId>
 			<version>${apache.ds.version}</version>
@@ -209,13 +194,11 @@
 			</exclusions>
 		</dependency>
 
-<dependency>
-	<groupId>org.apache.directory.server</groupId>
-	<artifactId>kerberos-client</artifactId>
-<version>${apache.ds.version}</version>
-</dependency>
-            
-            
+		<dependency>
+			<groupId>org.apache.directory.server</groupId>
+			<artifactId>kerberos-client</artifactId>
+			<version>${apache.ds.version}</version>
+		</dependency>
 
 	</dependencies>
 
@@ -236,20 +219,20 @@
 					<include>**/*.*</include>
 				</includes>
 				<excludes>
-				<exclude>login.conf</exclude>
+					<exclude>login.conf</exclude>
 				</excludes>
 			</testResource>
-			
+
 			<testResource>
 				<directory>${basedir}/src/test/resources</directory>
 				<filtering>true</filtering>
 				<includes>
 					<include>login.conf</include>
 				</includes>
-				
+
 			</testResource>
-			
-			
+
+
 		</testResources>
 
 		<plugins>
@@ -334,18 +317,6 @@
 				</executions>
 			</plugin>
 		</plugins>
-		<!-- <pluginManagement> <plugins> <plugin> <groupId>org.eclipse.m2e</groupId> 
-			<artifactId>lifecycle-mapping</artifactId> <version>1.0.0</version> <configuration> 
-			<lifecycleMappingMetadata> <pluginExecutions> <pluginExecution> <pluginExecutionFilter> 
-			<groupId>org.apache.maven.plugins</groupId> <artifactId>maven-compiler-plugin</artifactId> 
-			<versionRange>[3.0.0,)</versionRange> <goals> <goal>compile</goal> <goal>testCompile</goal> 
-			</goals> </pluginExecutionFilter> <action> <ignore /> </action> </pluginExecution> 
-			<pluginExecution> <pluginExecutionFilter> <groupId> org.codehaus.mojo </groupId> 
-			<artifactId> build-helper-maven-plugin </artifactId> <versionRange> [1.5,) 
-			</versionRange> <goals> <goal>add-resource</goal> <goal>add-source</goal> 
-			<goal>add-test-source</goal> </goals> </pluginExecutionFilter> <action> <ignore></ignore> 
-			</action> </pluginExecution> </pluginExecutions> </lifecycleMappingMetadata> 
-			</configuration> </plugin> </plugins> </pluginManagement> -->
 	</build>
 
 	<repositories>
@@ -354,14 +325,40 @@
 			<name>Sonatype Releases Repository</name>
 			<url>http://oss.sonatype.org/content/repositories/releases</url>
 		</repository>
-		
-		
-    <repository>
-      <id>jspresso</id>
-      <url>http://repository.jspresso.org/maven2/</url>
-    </repository>
- 
-		
-		
+
+
+		<repository>
+			<id>jspresso</id>
+			<url>http://repository.jspresso.org/maven2/</url>
+		</repository>
+
 	</repositories>
+
+
+	<profiles>
+		<profile>
+			<id>unix</id>
+			<activation>
+				<os>
+					<family>unix</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<excludes>
+								<exclude>**/*affle*.java</exclude>
+							</excludes>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+			<properties>
+			<path.delim>/</path.delim>
+			</properties>
+		</profile>
+	</profiles>
 </project>
