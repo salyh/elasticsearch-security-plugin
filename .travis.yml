@@ -1,12 +1,16 @@
 language: java
-before_script:
-  - sudo sed -i s/localhost.localdomain// /etc/hosts
 
-install: mvn install -Dgpg.skip=true
 jdk:
   - openjdk6
   - openjdk7
   - oraclejdk7
+
+before_script:
+    # replace localhost.localdomain
+    - sudo apt-get update
+    - sudo sed -i "s/localhost.localdomain//" /etc/hosts
+
+install: mvn install -Dgpg.skip=true
 
 notifications:
   email:
