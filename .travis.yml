@@ -1,7 +1,6 @@
 language: java
 before_script:
-  - cat /etc/hosts
-  - echo 127.0.0.1 localhost > /etc/hosts
+  - sudo sed -i s/localhost.localdomain// /etc/hosts
 
 install: mvn install -Dgpg.skip=true
 jdk:
