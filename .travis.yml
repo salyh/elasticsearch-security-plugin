@@ -5,13 +5,7 @@ jdk:
   - openjdk7
   - oraclejdk7
 
-before_script:
-  - echo -e "\n\n>>> Building ..."
-  - sh -c "echo building 2"
-  - sudo cat /etc/hosts
-  - sudo sed -i"s/localhost.localdomain//" /etc/hosts
-  - sudo cat /etc/hosts
-  - echo -e "\n\n>>> End ..."
+before_script: ./travisscripts/travis-before-install.sh
 
 install: mvn install -Dgpg.skip=true
 

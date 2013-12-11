@@ -53,6 +53,7 @@ If you use spnegoad then you must provide the following configuration parameters
 * ``security.authorization.ldap.connectionpassword: secret`` Password for low priv login to ldap server (Omit for anonymous authentication). No encryption here, this is plaintext!
 
 If you use spnegoad and not Active Directory you may want configure your LDAP layout
+(look here for details: http://tomcat.apache.org/tomcat-7.0-doc/realm-howto.html#JNDIRealm)
 * ``security.authorization.ldap.userbase: ""`` (Default is Root DSE)
 * ``security.authorization.ldap.usersearch: (sAMAccountName={0})`` Default is (sAMAccountName={0})
 * ``security.authorization.ldap.rolebase: ""`` (Default is Root DSE)
