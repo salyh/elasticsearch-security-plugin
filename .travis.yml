@@ -6,9 +6,10 @@ jdk:
   - oraclejdk7
 
 before_script:
-    # replace localhost.localdomain
-    - sudo apt-get update
-    - sudo sed -i "s/localhost.localdomain//" /etc/hosts
+  - echo 'executing before script'
+  - sudo cat /etc/hosts
+  - sudo sed -i"s/localhost.localdomain//" /etc/hosts
+  - sudo cat /etc/hosts
 
 install: mvn install -Dgpg.skip=true
 
