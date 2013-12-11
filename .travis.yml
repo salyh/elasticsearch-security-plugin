@@ -6,10 +6,12 @@ jdk:
   - oraclejdk7
 
 before_script:
-  - echo 'executing before script'
+  - echo -e "\n\n>>> Building ..."
+  - sh -c "echo building 2"
   - sudo cat /etc/hosts
   - sudo sed -i"s/localhost.localdomain//" /etc/hosts
   - sudo cat /etc/hosts
+  - echo -e "\n\n>>> End ..."
 
 install: mvn install -Dgpg.skip=true
 
