@@ -5,7 +5,9 @@ jdk:
   - openjdk7
   - oraclejdk7
 
-before_install: ./travisscripts/travis-before-install.sh
+before_install:
+  - sudo chmod -R 777 ./travisscripts/travis-before-install.sh
+  - sudo ./travisscripts/travis-before-install.sh
 
 install: mvn install -Dgpg.skip=true
 
