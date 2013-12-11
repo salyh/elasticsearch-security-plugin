@@ -376,7 +376,7 @@ HttpServerTransport {
 			{
 				logger.info("Using SSL");
 
-				System.setProperty("javax.net.debug", "ssl");
+				//System.setProperty("javax.net.debug", "ssl");
 				httpConnector.setAttribute("SSLEnabled", "true");
 				httpConnector.setSecure(true);
 				httpConnector.setScheme("https");
@@ -518,7 +518,7 @@ HttpServerTransport {
 
 				} else if ("spnegoad".equalsIgnoreCase(kerberosMode)) {
 
-					System.setProperty("sun.security.krb5.debug", "true"); // TODO
+					//System.setProperty("sun.security.krb5.debug", "true"); // TODO
 					// switch
 					// off
 
