@@ -1,5 +1,6 @@
 elasticsearch-security-plugin
 =============================
+[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
 
 <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
 <a href="https://twitter.com/hendrikdev22">Twitter @hendrikdev22</a>
@@ -12,15 +13,25 @@ For UNIX servers Kerberos/SPNEGO is supported through tomcat build in SPNEGO Val
 PKI/SSL client certificate authentication is also supported (CLIENT-CERT method). SSL/TLS is also supported without client authentication.
 
 You can use this plugin also without Kerberos/NTLM/PKI but then only host based authentication is available.
-<!--
-[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)-->
 
 As of now two security modules are implemented:
 * Actionpathfilter: Restrict actions against Elasticsearch on a coarse-grained level like who is allowed to to READ, WRITE or even ADMIN rest api calls
 * Document level security (dls): Restrict actions on document level like who is allowed to query for which fields within a document
 
+<h3>Compatibility Matrix</h3> 
+| Operating System | Kereberos | LDAP  |
+| ------ | ------ | ------ |
+|  Windows  |  AD with waffle; MIT, Heimdal with tomcatspnego  |   AD, OpenLDAP, Domino, ...  |
+|  Non-Windows  |  MIT, Heimdal with tomcatspnego  |   AD, OpenLDAP, Domino, ...  |
+
+
 <h3>Installation</h3> 
 (Until the first release is out you have to build this plugin yourself with maven or download from the github release page and install manually)
+
+Prerequisites:
+* Open JDK 6/7 or Oracle 7 JRE
+* Elasticsearch 0.90.x
+* If Kerberos is used you need an KDC like  AD, MIT or Heimdal
 
 Build yourself:
 * Install maven

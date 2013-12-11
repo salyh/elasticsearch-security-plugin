@@ -9,7 +9,7 @@ before_install:
   - sudo chmod -R 777 ./travisscripts/travis-before-install.sh
   - sudo ./travisscripts/travis-before-install.sh
 
-install: mvn install -Dgpg.skip=true
+install: mvn clean install  -q -Dgpg.skip=true
 
 notifications:
   email:
