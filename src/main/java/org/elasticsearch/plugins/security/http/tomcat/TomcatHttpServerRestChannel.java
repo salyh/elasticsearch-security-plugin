@@ -89,12 +89,28 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 
 			if(!(response instanceof XContentRestResponse))
 			{
-				log.debug("res " + new String( ((StringRestResponse)response).content()));
-
-				//TODO write out
+				
+				int contentLength = response.contentLength();
+	            if (response.prefixContentLength() > 0) {
+	                contentLength += response.prefixContentLength();
+	            }
+	            if (response.suffixContentLength() > 0) {
+	                contentLength += response.suffixContentLength();
+	            }
+	            resp.setContentLength(contentLength);
+	            ServletOutputStream out = resp.getOutputStream();
+	            if (response.prefixContent() != null) {
+	                out.write(response.prefixContent(), 0, response.prefixContentLength());
+	            }
+	            out.write(response.content(), 0, response.contentLength());
+	            if (response.suffixContent() != null) {
+	                out.write(response.suffixContent(), 0, response.suffixContentLength());
+	            }
+	            out.close();
+	            return;
 			}
 
-			final XContentBuilder modifiedContent = enableDls ? applyDls(response) : ((XContentRestResponse) response)
+			final XContentBuilder modifiedContent = enableDls ? applyDls((XContentRestResponse)response) : ((XContentRestResponse) response)
 					.builder();
 
 			int contentLength = modifiedContent.bytes().length();
@@ -131,13 +147,9 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		}
 	}
 
-	protected XContentBuilder applyDls(final RestResponse response)
+	protected XContentBuilder applyDls(final XContentRestResponse xres)
 			throws IOException, MalformedConfigurationException {
 
-
-
-
-		final XContentRestResponse xres = (XContentRestResponse) response;
 
 		final List<String> indices = SecurityUtil.getIndices(restRequest);
 		if (indices.contains(securityService
@@ -154,8 +166,8 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 
 		}
 
-		if (response.status().getStatus() < 200
-				|| response.status().getStatus() >= 300) {
+		if (xres.status().getStatus() < 200
+				|| xres.status().getStatus() >= 300) {
 
 			return xres.builder();
 		}

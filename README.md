@@ -19,7 +19,7 @@ As of now two security modules are implemented:
 * Document level security (dls): Restrict actions on document level like who is allowed to query for which fields within a document
 
 <h3>Compatibility Matrix</h3> 
-| Operating System | Kereberos | LDAP  |
+| Operating System | Kerberos | LDAP  |
 | ------ | ------ | ------ |
 |  Windows  |  AD with waffle; MIT, Heimdal with tomcatspnego  |   AD, OpenLDAP, Domino, ...  |
 |  Non-Windows  |  MIT, Heimdal with tomcatspnego  |   AD, OpenLDAP, Domino, ...  |

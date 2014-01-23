@@ -4,7 +4,7 @@
 
 	<groupId>com.github.salyh.elasticsearch</groupId>
 	<artifactId>elasticsearch-security-plugin</artifactId>
-	<version>0.0.2.Beta3</version>
+	<version>0.0.2.Beta4</version>
 	<packaging>jar</packaging>
 
 	<name>elasticsearch-security-plugin</name>
@@ -13,7 +13,7 @@
 	<inceptionYear>2013</inceptionYear>
 
 	<properties>
-		<elasticsearch.version>0.90.6</elasticsearch.version>
+		<elasticsearch.version>0.90.5</elasticsearch.version>
 		<tomcat.version>7.0.47</tomcat.version>
 		<apache.ds.version>2.0.0-M15</apache.ds.version>
 		<path.delim>\\</path.delim>
