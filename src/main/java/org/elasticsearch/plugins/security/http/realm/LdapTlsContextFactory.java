@@ -30,7 +30,7 @@ public class LdapTlsContextFactory implements InitialContextFactory {
 		private final LdapContext delegate;
 		private final StartTlsResponse tls;
 
-		@SuppressWarnings("unchecked")
+		
 		private ProxyLdapContext(Hashtable env) throws NamingException {
 			final Map<String, Object> savedEnv = new HashMap<String, Object>();
 			for (final String key : Arrays.asList(Context.SECURITY_AUTHENTICATION,

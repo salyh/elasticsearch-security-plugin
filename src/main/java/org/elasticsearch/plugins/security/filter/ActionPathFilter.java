@@ -30,15 +30,15 @@ public class ActionPathFilter extends SecureRestFilter {
 		}
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
-				request.path(), SecurityUtil.BUILT_IN_READ_COMMANDS)) {
+				request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX)) {
 			log.warn("Index- or Typename should not contains search commands like "
-					+ Arrays.toString(SecurityUtil.BUILT_IN_READ_COMMANDS));
+					+ Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX));
 		}
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
-				request.path(), SecurityUtil.BUILT_IN_WRITE_COMMANDS)) {
+				request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX)) {
 			log.warn("Index- or Typename should not contains write commands like "
-					+ Arrays.toString(SecurityUtil.BUILT_IN_WRITE_COMMANDS));
+					+ Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX));
 		}
 
 		try {
@@ -67,14 +67,14 @@ public class ActionPathFilter extends SecureRestFilter {
 			}
 
 			if (permLevel.ordinal() < PermLevel.READWRITE.ordinal()
-					&& SecurityUtil.isWriteRequest(request)) {
+					&& SecurityUtil.isWriteRequest(request,securityService.isStrictModeEnabled())) {
 				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
 						"No permission (for write actions)");
 				return;
 			}
 
 			if (permLevel == PermLevel.READONLY
-					&& !SecurityUtil.isReadRequest(request)) {
+					&& !SecurityUtil.isReadRequest(request,securityService.isStrictModeEnabled())) {
 				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
 						"No permission (for read actions)");
 				return;

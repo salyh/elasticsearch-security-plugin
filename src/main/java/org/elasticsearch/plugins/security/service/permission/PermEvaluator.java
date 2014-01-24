@@ -235,6 +235,19 @@ public abstract class PermEvaluator<T> {
 				continue permloop;
 
 			}
+			
+			
+			//@author - Ram Kotamaraja - START
+			//added condition to check if indices provided are empty to validate the matching of index. This is required to allow requesting metadata queries like /_mapping, /_setting etc.
+			else
+			if(indices.isEmpty() && !p.indices.isEmpty() && !p.indices.contains("*") ){ 
+
+				log.debug("Not all indexes match because no index specified, so skip this permission ["
+						+ p.indices + " != " + indices + "]");
+				continue permloop;
+				
+			}
+			//@author - Ram Kotamaraja - END
 
 			log.debug("All rules match, will apply " + p);
 			return p.permLevel;

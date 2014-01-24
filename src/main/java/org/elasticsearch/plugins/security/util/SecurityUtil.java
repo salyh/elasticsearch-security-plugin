@@ -144,11 +144,38 @@ public class SecurityUtil {
 
 			int endIndex;
 
-			if ((endIndex = path.indexOf('/', 1)) != -1) {
-				indices = Strings.splitStringByCommaToArray(path.substring(1,
-						endIndex));
+			
+			
+			
+			/*			if ((endIndex = path.indexOf('/', 1)) != -1) {
+			indices = Strings.splitStringByCommaToArray(path.substring(1,
+					endIndex));
 
-			}
+		}
+*/			
+/**
+*@author Ram Kotamaraja
+*The above commented code handles code if there is a '/' at the end of the elastic search indices. Code is modified to handle indices where there is no '/' after it.
+*Code below also handles the root level queries like '/_mapping', '/_settings' etc.			
+*/
+
+		//Code modification START - Ram Kotamaraja
+		if ((path.indexOf('/', 1)) != -1) {
+			endIndex = path.indexOf('/', 1);
+		}else{
+			endIndex = path.length();
+		}
+
+		//check if the index start with /_. If it is not staring, then parse path, if not do nothing to return empty object			
+		if (!path.trim().startsWith("/_")) {
+			indices = Strings.splitStringByCommaToArray(path.substring(1,endIndex));
+		}
+		
+		//Code modification END - Ram Kotamaraja
+			
+			
+			
+			
 		}
 
 		log.debug("Indices: " + Arrays.toString(indices));
@@ -195,7 +222,7 @@ public class SecurityUtil {
 		final String path = request.path();
 
 		// TODO all types, length=0 or _all ??
-		// TODO aliases indeices get expanded before or after rest layer?
+		// TODO aliases indices get expanded before or after rest layer?
 		log.debug("Evaluate decoded path for types '" + path + "'");
 
 		if (!path.startsWith("/")) {
@@ -250,16 +277,26 @@ public class SecurityUtil {
 			}
 		}
 	}
+	
 
 	public static String[] BUILT_IN_ADMIN_COMMANDS = new String[] { "_cluster",
 		"_settings", "_close", "_open", "_template", "_status", "_stats",
 		"_segments", "_cache", "_gateway", "_optimize", "_flush",
-		"_warmer", "_refresh", "_shutdown", "_nodes" };
-	public static String[] BUILT_IN_WRITE_COMMANDS = new String[] { "_create",
-		"_update", "_bulk", "_mapping", "_aliases", "_analyze" };
-	public static String[] BUILT_IN_READ_COMMANDS = new String[] { "_search",
-	"_msearch" };
+		"_warmer", "_refresh", "_shutdown"};
 
+	public static String[] BUILT_IN_WRITE_COMMANDS_STRICT = new String[] { "_create",
+		"_update", "_bulk", "_percolator","_mapping", "_aliases", "_analyze"};
+
+	public static String[] BUILT_IN_READ_COMMANDS_STRICT = new String[] { "_search",
+	"_msearch","_mlt", "_explain", "_validate","_count","_suggest", "_percolate",  "_nodes"};
+
+
+	public static String[] BUILT_IN_WRITE_COMMANDS_LAX = new String[] { "_create",
+		"_update", "_bulk"};
+
+	public static String[] BUILT_IN_READ_COMMANDS_LAX = new String[] { "_search",
+	"_msearch","_mlt", "_explain", "_validate","_count","_suggest", "_percolate",  "_nodes", "_percolator","_mapping", "_aliases", "_analyze"};
+	
 	private static boolean stringContainsItemFromListAsCommand(
 			final String inputString, final String[] items) {
 
@@ -284,20 +321,20 @@ public class SecurityUtil {
 		return false;
 	}
 
-	public static boolean isWriteRequest(final RestRequest request) {
+	public static boolean isWriteRequest(final RestRequest request, boolean strictModeEnabled) {
 		if (request.method() == Method.DELETE || request.method() == Method.PUT) {
 			return true;
 		}
 
 		if (request.method() == Method.POST) {
 			if (!stringContainsItemFromListAsCommand(request.path(),
-					BUILT_IN_READ_COMMANDS)) {
+					strictModeEnabled?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX)) {
 				return true;
 			}
 		}
 
 		return stringContainsItemFromListAsCommand(request.path(),
-				BUILT_IN_WRITE_COMMANDS);
+				strictModeEnabled?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX);
 	}
 
 	public static boolean isAdminRequest(final RestRequest request) {
@@ -305,7 +342,7 @@ public class SecurityUtil {
 				BUILT_IN_ADMIN_COMMANDS);
 	}
 
-	public static boolean isReadRequest(final RestRequest request) {
-		return !isWriteRequest(request) && !isAdminRequest(request);
+	public static boolean isReadRequest(final RestRequest request, boolean strictModeEnabled) {
+		return !isWriteRequest(request, strictModeEnabled) && !isAdminRequest(request);
 	}
 }

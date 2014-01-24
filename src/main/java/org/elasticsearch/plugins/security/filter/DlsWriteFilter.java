@@ -44,7 +44,7 @@ public class DlsWriteFilter extends SecureRestFilter {
 
 		try {
 
-			if (!SecurityUtil.isWriteRequest(request)) {
+			if (!SecurityUtil.isWriteRequest(request, securityService.isStrictModeEnabled())) {
 				filterChain.continueProcessing(request, channel);
 				return;
 			}

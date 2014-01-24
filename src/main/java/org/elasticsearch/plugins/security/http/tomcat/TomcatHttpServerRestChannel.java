@@ -25,7 +25,6 @@ import org.elasticsearch.plugins.security.service.permission.DlsPermission;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestResponse;
-import org.elasticsearch.rest.StringRestResponse;
 import org.elasticsearch.rest.XContentRestResponse;
 
 public class TomcatHttpServerRestChannel implements HttpChannel {
@@ -79,7 +78,8 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		if (restRequest.method() == RestRequest.Method.OPTIONS) {
 			// also add more access control parameters
 			resp.addHeader("Access-Control-Max-Age", "1728000");
-			resp.addHeader("Access-Control-Allow-Methods", "PUT, DELETE");
+			//resp.addHeader("Access-Control-Allow-Methods", "PUT, DELETE");
+			resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
 			resp.addHeader("Access-Control-Allow-Headers",
 					"X-Requested-With");
 		}
@@ -173,7 +173,9 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		}
 
 		if (!restRequest.path().contains("_search")
-				&& !restRequest.path().contains("_msearch")) {
+				&& !restRequest.path().contains("_msearch")
+				&& !restRequest.path().contains("_mlt")
+				&& !restRequest.path().contains("_suggest")) {
 
 			return xres.builder();
 		}
@@ -210,6 +212,12 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		fields.add("hits.hits._type");
 		fields.add("hits.hits._id");
 		fields.add("hits.hits._score");
+		
+		if(!securityService.isStrictModeEnabled()){
+			fields.add("facets"); 
+			fields.add("suggest");
+		}
+		
 
 		for (final DlsPermission p : perms) {
 

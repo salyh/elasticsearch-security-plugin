@@ -1,7 +1,10 @@
 package org.elasticsearch.plugins.security;
 
+import io.searchbox.client.JestResult;
+
 import java.util.Properties;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public abstract class SpnegoTests extends AbstractUnitTest {
@@ -167,6 +170,46 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 		executeSearch("fls_field_query.json", true);
 
 	}
+	
+	@Test
+	public void facetTest() throws Exception {
+
+		executeIndex("ur_test_all.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
+
+		executeIndex("fls_test_normal.json", "securityconfiguration",
+				"dlspermissions", "dlspermissions", true);
+
+		executeIndex("fls_dummy_content.json", "twitter",
+				"tweet", "1", true);
+
+		JestResult res = executeSearch("test_facet_search.json", true);
+ 
+		Assert.assertTrue(res.getJsonString().contains("facets"));
+		Assert.assertTrue(res.getJsonString().contains("term"));
+		
+
+	}
+	
+	/*@Test
+	public void facetTestStrict() throws Exception {
+
+		this.esSetup..put("security.strict", "true");
+		
+		executeIndex("ur_test_all.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
+
+		executeIndex("fls_test_normal.json", "securityconfiguration",
+				"dlspermissions", "dlspermissions", true);
+
+		executeIndex("fls_dummy_content.json", "twitter",
+				"tweet", "1", true);
+
+		JestResult res = executeSearch("test_facet_search.json", true);
+ 
+		Assert.assertTrue(!res.getJsonString().contains("facets"));
+		Assert.assertTrue(!res.getJsonString().contains("term"));
+		
+
+	}*/
 
 	@Test
 	public void normalTest23() throws Exception {

@@ -214,10 +214,10 @@ public abstract class AbstractUnitTest {
 		return new String[]{null,null};
 	}
 
-	private JestHttpClient getJestClient(String serverUri) throws Exception
+	/*private JestHttpClient getJestClient(String serverUri) throws Exception
 	{
 		return getJestClient(serverUri, null, null);
-	}
+	}*/
 
 
 	private JestHttpClient getJestClient(String serverUri, final String username,

@@ -30,7 +30,7 @@ As of now two security modules are implemented:
 
 Prerequisites:
 * Open JDK 6/7 or Oracle 7 JRE
-* Elasticsearch 0.90.x
+* Elasticsearch 0.90.9 (Maybe older 0.90.x releases will work too), 0.90.10 and greater not yet working
 * If Kerberos is used you need an KDC like  AD, MIT or Heimdal
 
 Build yourself:
@@ -92,6 +92,10 @@ Optionally enable XFF
 Enable at least one of the two security modules 
 * ``security.module.actionpathfilter.enabled: true``
 * ``security.module.dls.enabled: true``
+
+Enable strict mode if really needed (disabled by default, enable only if you know what you are doing)
+* ``security.strict: true`` Strict mode currently deny facet and suggester responses and treat some command like _mapping or _analyze as sensitive write requests 
+
 
 <h4>Configuration (security rules)</h4>
 The security rules for each module are stored in an special index ``securityconfiguration``.
@@ -401,6 +405,10 @@ If no rule matches the default rule will be applied.<br><br>
 This rule match if (the user is u1 or u2) and (has the role rol1 or role2) <br>
 and (issues the request from host1 or host2) and (operates on i1 or i2 or both)<br>
 and uses (documents of types t1 or t2 or both)<br>
+
+<h3>Contributers</h3>
+* Ram Kotamaraja
+
 <p>
 <p>
 TODO<br>

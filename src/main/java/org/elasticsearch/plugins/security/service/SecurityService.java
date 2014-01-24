@@ -39,6 +39,7 @@ AbstractLifecycleComponent<SecurityService> {
 	private final RestController restController;
 	private final Client client;
 	private final Settings settings;
+	private final boolean strictModeEnabled;
 
 	@Inject
 	public SecurityService(final Settings settings, final Client client,
@@ -51,6 +52,13 @@ AbstractLifecycleComponent<SecurityService> {
 		securityConfigurationIndex = settings.get(
 				"security.configuration.index", DEFAULT_SECURITY_CONFIG_INDEX);
 
+		strictModeEnabled = settings.getAsBoolean(
+				"security.strict", false);
+		
+	}
+
+	public boolean isStrictModeEnabled() {
+		return strictModeEnabled;
 	}
 
 	public Client getClient() {
