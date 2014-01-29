@@ -75,13 +75,18 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		} else {
 			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
+
+				
 		if (restRequest.method() == RestRequest.Method.OPTIONS) {
 			// also add more access control parameters
 			resp.addHeader("Access-Control-Max-Age", "1728000");
-			//resp.addHeader("Access-Control-Allow-Methods", "PUT, DELETE");
+			//@author - Ram Kotamaraja
+			//resp.addHeader("Access-Control-Allow-Methods", "PUT, DELETE"); -- Previous code			
+			//enhancing the list of allowed method list to meet the requirements of Kibana
 			resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
 			resp.addHeader("Access-Control-Allow-Headers",
-					"X-Requested-With");
+					"X-Requested-With, Content-Type, Content-Length");
+						
 		}
 		try {
 
