@@ -1,6 +1,7 @@
 package org.elasticsearch.plugins.security.filter;
 
-public class FieldResponseFilter { /*
+public class FieldResponseFilter { 
+/*
  * extends SecureRestFilter {
  * 
  * public FieldResponseFilter(final

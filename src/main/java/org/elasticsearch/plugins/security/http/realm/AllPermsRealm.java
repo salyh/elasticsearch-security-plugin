@@ -11,12 +11,16 @@ import org.apache.catalina.connector.Response;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.realm.GenericPrincipal;
 import org.apache.catalina.realm.RealmBase;
+import org.elasticsearch.common.logging.ESLogger;
+import org.elasticsearch.common.logging.Loggers;
 import org.ietf.jgss.GSSContext;
 import org.ietf.jgss.GSSCredential;
 import org.ietf.jgss.GSSException;
 
 public class AllPermsRealm extends RealmBase {
 
+	private static final ESLogger log = Loggers.getLogger(AllPermsRealm.class);
+	
 	public AllPermsRealm() {
 		// TODO Auto-generated constructor stub
 	}
@@ -33,21 +37,22 @@ public class AllPermsRealm extends RealmBase {
 	public Principal authenticate(GSSContext gssContext, boolean storeCred) {
 		// TODO Auto-generated method stub
 
-		System.out.println("gssContext "+gssContext+storeCred);
+		log.debug("gssContext "+gssContext+storeCred);
 		try {
-			System.out.println("gssContext "+gssContext.getSrcName().toString());
-			System.out.println("gssContext isinitiator "+gssContext.isInitiator());
+			log.debug("gssContext "+gssContext.getSrcName().toString());
+			log.debug("gssContext isinitiator "+gssContext.isInitiator());
 		} catch (final GSSException e1) {
 			// TODO Auto-generated catch block
-			System.out.println(e1.toString());
+			log.debug(e1.toString());
+			//System.out.println(e1.toString());
 		}
-		System.out.println("gssContext isEstablished "+gssContext.isEstablished());
-		System.out.println("gssContext getCredDelegState "+gssContext.getCredDelegState());
+		log.debug("gssContext isEstablished "+gssContext.isEstablished());
+		log.debug("gssContext getCredDelegState "+gssContext.getCredDelegState());				
 		try {
-			System.out.println("gssContext "+gssContext.getDelegCred());
+			log.debug("gssContext "+gssContext.getDelegCred());
 		} catch (final GSSException e) {
 			// TODO Auto-generated catch block
-			System.out.println(e.toString());
+			log.debug(e.toString());
 		}
 
 		return super.authenticate(gssContext, storeCred);
@@ -57,20 +62,20 @@ public class AllPermsRealm extends RealmBase {
 	protected Principal getPrincipal(String username,
 			GSSCredential gssCredential) {
 
-		System.out.println("getPrincipal(String username, GSSCredential gssCredential) "+username+"//"+gssCredential);
+		log.debug("getPrincipal(String username, GSSCredential gssCredential) "+username+"//"+gssCredential);
 		throw new RuntimeException(username+"//"+gssCredential);
 	}
 
 	@Override
 	protected String getPassword(String username) {
-		System.out.println("getPassword "+username);
+		log.debug("getPassword "+username);
 		return null;
 	}
 
 	@Override
 	protected Principal getPrincipal(String username) {
 		// TODO Auto-generated method stub
-		System.out.println("getPrincipal(String username) "+username);
+		log.debug("getPrincipal(String username) "+username);
 		return new GenericPrincipal(username, null, Arrays.asList( "*".split("")));
 	}
 

@@ -13,8 +13,8 @@
 	<inceptionYear>2013</inceptionYear>
 
 	<properties>
-		<elasticsearch.version>0.90.9</elasticsearch.version>
-		<tomcat.version>7.0.50</tomcat.version>
+		<elasticsearch.version>0.90.6</elasticsearch.version>
+		<tomcat.version>7.0.47</tomcat.version>
 		<apache.ds.version>2.0.0-M15</apache.ds.version>
 		<path.delim>\\</path.delim>
 	</properties>
@@ -81,7 +81,7 @@
 		<dependency>
 			<groupId>com.github.tlrx</groupId>
 			<artifactId>elasticsearch-test</artifactId>
-			<version>0.90.6</version>
+			<version>${elasticsearch.version}</version>
 			<scope>test</scope>
 		</dependency>
 
