@@ -1,7 +1,6 @@
 elasticsearch-security-plugin for Kiabana 3.0.0
 
 <a href="mailto:ram.dhan@gmail.com">E-Mail ram.dhan@gmail.com</a><p>
-Note: This is in beta state and just a hack of the original [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin). Use at your own risk.
 
 Added a new security index to provide security around kibana 3.0.0 fifth milestone. Kibana uses a generic search query such as http://elasticsearchhost:9200/testindex1/_search. To provide security around queries like that, the pulgin is modfied to support addtional kibana configuration. Configuration is as follows. 
 
@@ -34,7 +33,7 @@ In 'ActionPathFilter' class added 'massageKibanaRequest' method to add 'types' f
 
 
 
-
+Original elasticsearch-security-plugin documentation below:
 
 elasticsearch-security-plugin
 =============================
