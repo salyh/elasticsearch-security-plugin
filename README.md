@@ -1,3 +1,41 @@
+elasticsearch-security-plugin for Kiabana 3.0.0
+
+<a href="mailto:ram.dhan@gmail.com">E-Mail ram.dhan@gmail.com</a><p>
+Note: This is in beta state and just a hack of the original [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin). Use at your own risk.
+
+Added a new security index to provide security around kibana 3.0.0 fifth milestone. Kibana uses a generic search query such as http://elasticsearchhost:9200/testindex1/_search. To provide security around queries like that, the pulgin is modfied to support addtional kibana configuration. Configuration is as follows. 
+
+PUT /securityconfiguration/actionpathfilter/kibana
+{
+             "rules": [
+                {
+                    "index" : "testindex1",
+                    "types" : [ "testtype1", "testtype5", "testtype13", "testtype7"]
+                },
+                {
+                    "index" : "testindex2",
+                    "types" : [ "testtype19", "testtype21" ]
+                },
+                {
+                    "index" : "testdata",
+                    "types" : [ ""testtype1", "testtype2" ]
+                }
+	     ]
+}
+
+This configuration allows users to specify which types in a given index are accessible by users. 
+
+
+In 'TomcatHttpServerRestRequest' class, removed final on 'content' variable. This is done to enable the ES request modification on the fly so that kibana security can be applied.
+
+In 'SecurityService' class added getKibanaTypes method to obtain the types that are accessible in a given index. 
+
+In 'ActionPathFilter' class added 'massageKibanaRequest' method to add 'types' filters to Kibana requests. Kibana 3.0.0 uses one index at a time. So the methtod supports one index at a time. In this method, for all the types are evaluated against core plugins access permissions. If the permission evaluation for the type return true, then that type is added as a filter to narrow down the search query. 
+
+
+
+
+
 elasticsearch-security-plugin
 =============================
 [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
