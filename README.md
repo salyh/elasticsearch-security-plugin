@@ -4,6 +4,7 @@ elasticsearch-security-plugin for Kiabana 3.0.0
 
 Added a new security index to provide security around kibana 3.0.0 fifth milestone. Kibana uses a generic search query such as http://elasticsearchhost:9200/testindex1/_search. To provide security around queries like that, the pulgin is modfied to support addtional kibana configuration. Configuration is as follows. 
 
+<pre><code>
 PUT /securityconfiguration/actionpathfilter/kibana
 {
              "rules": [
@@ -21,6 +22,8 @@ PUT /securityconfiguration/actionpathfilter/kibana
                 }
 	     ]
 }
+
+</code></pre>
 
 This configuration allows users to specify which types in a given index are accessible by users. 
 
