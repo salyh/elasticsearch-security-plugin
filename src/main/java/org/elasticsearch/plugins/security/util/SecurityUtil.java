@@ -179,6 +179,7 @@ public class SecurityUtil {
 		}
 
 		log.debug("Indices: " + Arrays.toString(indices));
+
 		return Arrays.asList(indices);
 
 	}

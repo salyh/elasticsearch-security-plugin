@@ -154,6 +154,7 @@ public abstract class PermEvaluator<T> {
 			String _host = null;
 
 			log.debug("Check perm " + p);
+//			log.debug("perm users " + p.users);
 
 			// TODO difference between not here and []
 			if (!p.users.isEmpty()
@@ -169,6 +170,8 @@ public abstract class PermEvaluator<T> {
 					+ (callback == null ? "" : callback.getRemoteuser())
 					+ " match");
 
+//			log.debug("perm roles " + p.roles);
+			
 			if (!p.roles.contains("*") && !p.roles.isEmpty()) {
 				if (callback == null) {
 					log.debug("Role does not match, so skip this permission");
@@ -189,6 +192,8 @@ public abstract class PermEvaluator<T> {
 				}
 			}
 
+//			log.debug("perm hosts " + p.inetAddresses);
+			
 			if (!p.inetAddresses.contains("*") && !p.inetAddresses.isEmpty()) {
 				for (final String pinetAddress : p.inetAddresses) {
 					if (new WildcardIpOrHostname(pinetAddress)
@@ -217,6 +222,7 @@ public abstract class PermEvaluator<T> {
 
 			}
 
+		
 			if (!p.types.isEmpty() && !p.types.contains("*")
 					&& !p.types.containsAll(types)) {
 				log.debug("Not all types match, so skip this permission ["
@@ -227,6 +233,8 @@ public abstract class PermEvaluator<T> {
 
 			log.debug("All types matches");
 
+			log.debug("perm indices " + p.indices);
+			
 			if (!p.indices.isEmpty() && !p.indices.contains("*")
 					&& !p.indices.containsAll(indices)) {
 

@@ -39,6 +39,8 @@ public abstract class SecureRestFilter extends RestFilter {
 	@Override
 	public final void process(final RestRequest request,
 			final RestChannel channel, final RestFilterChain filterChain) {
+		
+
 
 		// TODO check aliases, multiple indices, _all, ...
 		final List<String> indices = SecurityUtil.getIndices(request);

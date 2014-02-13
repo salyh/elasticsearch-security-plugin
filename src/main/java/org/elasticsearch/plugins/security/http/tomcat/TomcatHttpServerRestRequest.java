@@ -35,7 +35,25 @@ HttpRequest {
 
 	private final Map<String, String> params;
 
-	private final BytesReference content;
+	//private final BytesReference content; //original declaration with 'final' key word to make it immutable. 
+	private BytesReference content; //Removed final to accommodate for request modification on the fly to enable kibana filter by Ram Kotamaraja
+
+	/**
+	 * @author Ram Kotamaraja
+	 * Getter Method for returning content
+	 * @return BytesReference 
+	 */
+	public BytesReference getContent() {
+		return content;
+	}
+
+	/**
+	 * @author Ram Kotamaraja
+	 * Setter Method for content
+	 */
+	public void setContent(BytesReference content) {
+		this.content = content;
+	}
 
 	private final String opaqueId;
 
@@ -46,17 +64,12 @@ HttpRequest {
 		method = Method.valueOf(request.getMethod());
 		params = new HashMap<String, String>();
 
-		log.debug("HttpServletRequest impl class: " + request.getClass());
-		log.debug("HttpServletRequest ru: " + request.getRemoteUser());
-		log.debug("HttpServletRequest up: " + request.getUserPrincipal());
-		//log.debug("HttpServletRequest up: " + request.getUserPrincipal().getClass().toString());
-
 		if (request.getQueryString() != null) {
 			RestUtils.decodeQueryString(request.getQueryString(), 0,
 					params);
 		}
 
-		content = new BytesArray(Streams.copyToByteArray(request
+ 		content = new BytesArray(Streams.copyToByteArray(request
 				.getInputStream()));
 		request.setAttribute(REQUEST_CONTENT_ATTRIBUTE, content);
 	}
@@ -214,6 +227,19 @@ HttpRequest {
 
 		return null;
 
+	}
+
+	/**
+	 * @author - Ram Kotamaraja
+	 * Method added to modify the request query based on the authorization permission settings 
+	 * in the security configuration. This method will set the modified content in request.
+	 * @param requestContentAttribute
+	 * @param content
+	 */
+	public void setAttribute(String requestContentAttribute,
+			BytesReference content) {
+		this.request.setAttribute(requestContentAttribute, content);
+		
 	}
 
 

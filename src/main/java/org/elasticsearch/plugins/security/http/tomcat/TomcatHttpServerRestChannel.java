@@ -90,7 +90,8 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		}
 		try {
 
-			log.debug("RestResponse class " +response.getClass());
+			//log.debug("RestResponse class " +response.getClass());
+			//log.debug("RestResponse content " +new String(response.content()));
 
 			if(!(response instanceof XContentRestResponse))
 			{
@@ -234,7 +235,7 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 
 		}
 
-		log.debug(fields.toString());
+		//log.debug("fields.toString()" + fields.toString());
 
 		final Map<String, Object> filteredSource = XContentMapValues.filter(
 				mapTuple.v2(), fields.toArray(new String[0]), null);

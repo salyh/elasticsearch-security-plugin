@@ -5,7 +5,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
@@ -277,4 +281,83 @@ AbstractLifecycleComponent<SecurityService> {
 
 	}
 
+	/**
+	 * @author Ram Kotamaraja
+	 * @param indices - List of ES indices. Now supports only one index at a time. 
+	 * @return returns list of types configured in kibana security configuration
+	 * @throws IOException
+	 * @throws MalformedConfigurationException
+	 */
+	@SuppressWarnings("unchecked")
+	public List<String> getKibanaTypes(List<String> indices)
+			throws IOException, MalformedConfigurationException {
+
+		// TODO - Support multiple indices return map
+		final HashMap<String,String> permsMap = new HashMap<String,String>();
+		
+		final Set<String> perms = new HashSet<String>();
+
+		final List<JSONObject> kibanaPermissions = new ArrayList<JSONObject>();
+
+		String json = null;
+
+			json = XContentHelper.convertToJson(getXContentSecurityConfigurationAsBR("actionpathfilter",
+					"kibana"), false);
+		
+		//logger.debug("Kibana Configuration: "+ json );
+
+		if(JsonPath.parse(json) != null){
+			kibanaPermissions.addAll((List<JSONObject>) JsonPath.read(json,"rules"));
+		}
+
+		//logger.debug("After $.rules: "+ kibanaPermissions);
+		
+		kibanaLoop:
+		for (final JSONObject kibanaPermission : kibanaPermissions) {
+
+			if (kibanaPermission == null) {
+				continue;
+			}
+			
+			
+			String index = null;
+			
+			//logger.debug("indices: "+indices);
+			permLoop:
+			for (final String field : kibanaPermission.keySet()) {
+
+				
+				//logger.debug("field: "+field + " :"+kibanaPermission.get(field));
+				//logger.debug("list contains ? "+indices.contains(kibanaPermission.get(field).toString().trim()));
+				
+				
+				if(index == null && field.equals("index") 
+						&& !indices.contains(kibanaPermission.get(field).toString())){
+					continue kibanaLoop;
+				}else
+					if(index == null && field.equals("index") 
+							&& indices.contains(kibanaPermission.get(field).toString().trim())){
+					
+						index = kibanaPermission.get(field).toString();
+						continue permLoop;
+				}else
+					if(index != null){
+					
+					//logger.debug("field: types :"+kibanaPermission.get("types").getClass());
+					perms.addAll((Collection<? extends String>) kibanaPermission.get("types"));				
+					
+					index = null;
+				}				
+			}
+		}
+
+		//logger.debug("kibana perm list:"+ perms);
+
+		List<String> returnPerms = new ArrayList<String>();
+		returnPerms.addAll(perms);
+		
+		return returnPerms;
+
+	}	
+	
 }
