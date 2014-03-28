@@ -46,12 +46,11 @@ public abstract class SecureRestFilter extends RestFilter {
 				.getSecurityConfigurationIndex())) {
 
 			try {
-				if (getClientHostAddress(request).getHostAddress()
-						.equals("127.0.0.1")) {
+				if (getClientHostAddress(request).isLoopbackAddress()) {
 					filterChain.continueProcessing(request, channel);
 				} else {
 					SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
-							"Only allowed from localhost");
+							"Only allowed from localhost (loopback)");
 				}
 			} catch (final UnknownHostException e) {
 				SecurityUtil.send(request, channel,

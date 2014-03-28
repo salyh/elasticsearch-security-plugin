@@ -54,7 +54,7 @@ AbstractLifecycleComponent<SecurityService> {
 
 		strictModeEnabled = settings.getAsBoolean(
 				"security.strict", false);
-		
+
 	}
 
 	public boolean isStrictModeEnabled() {
@@ -140,13 +140,16 @@ AbstractLifecycleComponent<SecurityService> {
 
 		// this.logger.debug(request.getClass().toString());
 
-		String addr = ((TomcatHttpServerRestRequest) request).remoteAddr();
-
+		final String oaddr = ((TomcatHttpServerRestRequest) request).remoteAddr();
 		// this.logger.debug("original hostname: " + addr);
 
-		if (addr == null || addr.isEmpty()) {
+		String raddr = oaddr;
+
+		if (oaddr == null || oaddr.isEmpty()) {
 			throw new UnknownHostException("Original host is <null> or <empty>");
 		}
+
+		final InetAddress iaddr = InetAddress.getByName(oaddr);
 
 		// security.http.xforwardfor.header
 		// security.http.xforwardfor.trustedproxies
@@ -188,9 +191,9 @@ AbstractLifecycleComponent<SecurityService> {
 
 				if (proxiesPassed.size() == 0
 						&& (Arrays.asList(xForwardedTrustedProxies).contains(
-								addr) || "127.0.0.1".equals(addr))) {
+								oaddr) || iaddr.isLoopbackAddress())) {
 
-					addr = addresses.get(0).trim();
+					raddr = addresses.get(0).trim();
 
 				} else {
 					throw new UnknownHostException(
@@ -206,12 +209,16 @@ AbstractLifecycleComponent<SecurityService> {
 
 		}
 
-		if (addr == null || addr.isEmpty()) {
+		if (raddr == null || raddr.isEmpty()) {
 			throw new UnknownHostException("Host is <null> or <empty>");
 		}
 
-		// if null or "" then loopback is returned
-		return InetAddress.getByName(addr);
+		if(raddr.equals(oaddr)) {
+			return iaddr;
+		} else {
+			// if null or "" then loopback is returned
+			return InetAddress.getByName(raddr);
+		}
 
 	}
 

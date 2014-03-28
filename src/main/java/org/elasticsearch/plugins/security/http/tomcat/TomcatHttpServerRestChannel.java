@@ -158,11 +158,11 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 
 			if (securityService
 					.getHostAddressFromRequest(restRequest)
-					.getHostAddress().equals("127.0.0.1")) {
+					.isLoopbackAddress()) {
 				return xres.builder();
 
 			} else {
-				throw new IOException("Only allowed from localhost");
+				throw new IOException("Only allowed from localhost (loopback)");
 			}
 
 		}
