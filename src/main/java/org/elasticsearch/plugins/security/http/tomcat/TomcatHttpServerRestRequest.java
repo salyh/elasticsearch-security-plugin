@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -16,12 +17,12 @@ import org.elasticsearch.common.io.Streams;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.http.HttpRequest;
-import org.elasticsearch.rest.support.AbstractRestRequest;
+
 import org.elasticsearch.rest.support.RestUtils;
 
 import waffle.servlet.WindowsPrincipal;
 
-public class TomcatHttpServerRestRequest extends AbstractRestRequest implements
+public class TomcatHttpServerRestRequest extends 
 HttpRequest {
 
 	protected static final ESLogger log = Loggers
@@ -214,6 +215,20 @@ HttpRequest {
 
 		return null;
 
+	}
+
+	@Override
+	public Iterable<Entry<String, String>> headers() {
+		
+		Map<String, String> headerMap = new HashMap<String, String>(); 
+		
+		 while(request.getHeaderNames().hasMoreElements())
+		 {
+			 String headerName = request.getHeaderNames().nextElement();
+			 headerMap.put(headerName, request.getHeader(headerName));
+		 }
+		 
+		 return headerMap.entrySet();
 	}
 
 

@@ -5,7 +5,7 @@ import static com.github.tlrx.elasticsearch.test.EsSetup.deleteAll;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
-import io.searchbox.client.config.ClientConfig;
+import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.client.http.JestHttpClient;
 import io.searchbox.core.Index;
 import io.searchbox.core.Search;
@@ -222,13 +222,13 @@ public abstract class AbstractUnitTest {
 
 	private JestHttpClient getJestClient(String serverUri, final String username,
 			final String password) throws Exception {// http://hc.apache.org/httpcomponents-client-ga/tutorial/html/authentication.html
-		final ClientConfig clientConfig1 = new ClientConfig.Builder(serverUri)
+		final HttpClientConfig clientConfig1 = new HttpClientConfig.Builder(serverUri)
 		.multiThreaded(true).build();
 
 		// Construct a new Jest client according to configuration via factory
 		final JestClientFactory factory1 = new JestClientFactory();
 
-		factory1.setClientConfig(clientConfig1);
+		factory1.setHttpClientConfig(clientConfig1);
 
 		final JestHttpClient c = (JestHttpClient) factory1.getObject();
 

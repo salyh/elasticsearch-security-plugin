@@ -10,7 +10,8 @@ import java.util.List;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 
-import org.elasticsearch.ElasticSearchException;
+
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.bytes.BytesReference;
@@ -66,7 +67,7 @@ AbstractLifecycleComponent<SecurityService> {
 	}
 
 	@Override
-	protected void doStart() throws ElasticSearchException {
+	protected void doStart() throws ElasticsearchException {
 
 		// TODO order
 
@@ -92,13 +93,13 @@ AbstractLifecycleComponent<SecurityService> {
 	}
 
 	@Override
-	protected void doStop() throws ElasticSearchException {
+	protected void doStop() throws ElasticsearchException {
 
 		logger.debug("doStop");
 	}
 
 	@Override
-	protected void doClose() throws ElasticSearchException {
+	protected void doClose() throws ElasticsearchException {
 		logger.debug("doClose");
 
 	}

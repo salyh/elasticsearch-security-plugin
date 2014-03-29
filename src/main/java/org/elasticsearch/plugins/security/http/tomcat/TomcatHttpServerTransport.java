@@ -24,7 +24,8 @@ import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
 import org.apache.catalina.startup.Tomcat;
-import org.elasticsearch.ElasticSearchException;
+
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.cluster.ClusterName;
 import org.elasticsearch.common.component.AbstractLifecycleComponent;
@@ -275,7 +276,7 @@ HttpServerTransport {
 	}
 
 	@Override
-	protected void doStart() throws ElasticSearchException {
+	protected void doStart() throws ElasticsearchException {
 		try {
 
 			final String currentDir = new File(".").getCanonicalPath();
@@ -602,13 +603,13 @@ HttpServerTransport {
 					new InetSocketTransportAddress(publishAddress));
 
 		} catch (final Exception e) {
-			throw new ElasticSearchException("Unable to start Tomcat", e);
+			throw new ElasticsearchException("Unable to start Tomcat", e);
 		}
 
 	}
 
 	@Override
-	protected void doStop() throws ElasticSearchException {
+	protected void doStop() throws ElasticsearchException {
 
 		try {
 			if (tomcat != null) {
@@ -616,7 +617,7 @@ HttpServerTransport {
 			}
 
 		} catch (final Exception e) {
-			throw new ElasticSearchException("Unable to stop Tomcat", e);
+			throw new ElasticsearchException("Unable to stop Tomcat", e);
 		}
 
 	}
@@ -626,12 +627,12 @@ HttpServerTransport {
 	}
 
 	@Override
-	protected void doClose() throws ElasticSearchException {
+	protected void doClose() throws ElasticsearchException {
 		try {
 			tomcat.destroy();
 			tomcat = null;
 		} catch (final LifecycleException e) {
-			throw new ElasticSearchException("Unable to destroy Tomcat", e);
+			throw new ElasticsearchException("Unable to destroy Tomcat", e);
 		}
 
 	}

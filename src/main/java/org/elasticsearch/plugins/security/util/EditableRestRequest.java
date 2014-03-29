@@ -1,12 +1,13 @@
 package org.elasticsearch.plugins.security.util;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.rest.support.AbstractRestRequest;
 
-public class EditableRestRequest extends AbstractRestRequest {
+
+public class EditableRestRequest extends RestRequest {
 
 	private RestRequest innerRestquest = null;
 	private BytesReference content = null;
@@ -123,6 +124,11 @@ public class EditableRestRequest extends AbstractRestRequest {
 			return defaultValue;
 		}
 		return value;
+	}
+
+	@Override
+	public Iterable<Entry<String, String>> headers() {
+		return innerRestquest.headers();
 	}
 
 }
