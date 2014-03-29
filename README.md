@@ -1,6 +1,6 @@
 elasticsearch-security-plugin
 =============================
-[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
+[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.svg?branch=ea0.9)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
 
 <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
 <a href="https://twitter.com/hendrikdev22">Twitter @hendrikdev22</a>
@@ -28,9 +28,13 @@ As of now two security modules are implemented:
 <h3>Installation</h3> 
 (Until the first release is out you have to build this plugin yourself with maven or download from the github release page and install manually)
 
+Branches:
+* master for Elasticsearch 1.0.0 - 1.x.x
+* ea0.9 for Elasticsearch 0.90.10 - 0.90.x
+
 Prerequisites:
 * Open JDK 6/7 or Oracle 7 JRE
-* Elasticsearch 0.90.9 (Maybe older 0.90.x releases will work too), 0.90.10 and greater not yet working
+* Elasticsearch 0.90.10 or higher
 * If Kerberos is used you need an KDC like  AD, MIT or Heimdal
 
 Build yourself:
