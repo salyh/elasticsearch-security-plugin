@@ -82,6 +82,7 @@ public class SecurityPermTests extends TestCase {
 				loadFile("test_normal.json"));
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.9"), null) == PermLevel.ALL);
+		
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.8"), null) == PermLevel.READWRITE);
 		assertTrue(evaluator.evaluatePerm(indices, null,
@@ -165,6 +166,34 @@ public class SecurityPermTests extends TestCase {
 
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("1.2.3.4"), null) == PermLevel.ALL);
+	}
+	
+	public void testWildcardIndicesCases2() throws Exception {
+
+		final List<String> indices = new ArrayList<String>();
+		indices.add("testindex");
+		indices.add("xtestindexy");
+
+		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
+				loadFile("test_wildcard_indices2.json"));
+
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("127.0.0.1"), null) == PermLevel.READWRITE);
+
+	}
+	
+	public void testWildcardIndicesCases22() throws Exception {
+
+		final List<String> indices = new ArrayList<String>();
+		indices.add("testindex-1020");
+		indices.add("testindex-9");
+
+		final PermEvaluator<?> evaluator = new PermLevelEvaluator(
+				loadFile("test_wildcard_indices2.json"));
+
+		assertTrue(evaluator.evaluatePerm(indices, null,
+				InetAddress.getByName("127.0.0.1"), null) == PermLevel.ALL);
+
 	}
 
 	public void testWildcardCases() throws Exception {

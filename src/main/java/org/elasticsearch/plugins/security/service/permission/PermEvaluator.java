@@ -42,7 +42,7 @@ public abstract class PermEvaluator<T> {
 
 		final List<Perm<T>> perms = new ArrayList<Perm<T>>();
 
-		final List<WildcardIpOrHostname> matchList = new ArrayList<WildcardIpOrHostname>();
+		final List<WildcardString> matchList = new ArrayList<WildcardString>();
 
 		try {
 
@@ -135,13 +135,13 @@ public abstract class PermEvaluator<T> {
 		for (final Perm<T> p : perms) {
 
 			for (final String ip : p.inetAddresses) {
-				matchList.add(new WildcardIpOrHostname(ip));
+				matchList.add(new WildcardString(ip));
 			}
 		}
 
-		final WildcardIpOrHostname clientHostName = new WildcardIpOrHostname(
+		final WildcardString clientHostName = new WildcardString(
 				hostAddress.getHostName());
-		final WildcardIpOrHostname clientHostIp = new WildcardIpOrHostname(
+		final WildcardString clientHostIp = new WildcardString(
 				hostAddress.getHostAddress());
 
 		permloop: for (final Perm<T> p : perms) {
@@ -191,9 +191,9 @@ public abstract class PermEvaluator<T> {
 
 			if (!p.inetAddresses.contains("*") && !p.inetAddresses.isEmpty()) {
 				for (final String pinetAddress : p.inetAddresses) {
-					if (new WildcardIpOrHostname(pinetAddress)
+					if (new WildcardString(pinetAddress)
 					.equals(clientHostName)
-					|| new WildcardIpOrHostname(pinetAddress)
+					|| new WildcardString(pinetAddress)
 					.equals(clientHostIp)) {
 
 						log.debug("Host adress " + pinetAddress + " match");
@@ -217,23 +217,69 @@ public abstract class PermEvaluator<T> {
 
 			}
 
-			if (!p.types.isEmpty() && !p.types.contains("*")
-					&& !p.types.containsAll(types)) {
-				log.debug("Not all types match, so skip this permission ["
-						+ p.types + " != " + types + "]");
-				continue permloop;
+			if (!p.types.isEmpty() && !p.types.contains("*")) {
+				
+				boolean typeMatch=false;
+				
+				typeloop:
+				for (final String pType : p.types) {
+					
+					for (final String tType : types)
+					{
+						if (new WildcardString(pType)
+						.equals(new WildcardString(tType))) {
+							log.debug("Type "+pType+" match " + tType + "");
+							typeMatch=true;
+							break typeloop;
 
+						}else {
+							log.debug("Type "+pType+" not match " + tType + "");
+						}
+						
+					}
+				}
+				
+				if(!typeMatch){
+					log.debug("Not all types match, so skip this permission ["
+							+ p.types + " != " + types + "]");
+					continue permloop;
+				}
 			}
 
 			log.debug("All types matches");
 
-			if (!p.indices.isEmpty() && !p.indices.contains("*")
-					&& !p.indices.containsAll(indices)) {
+			if (!p.indices.isEmpty() && !p.indices.contains("*")) {
 
-				log.debug("Not all indexes match, so skip this permission ["
-						+ p.indices + " != " + indices + "]");
-				continue permloop;
+				
+				boolean indexMatch=false;
+				
+				indexloop:
+                for (final String pIndex : p.indices) {
+					
+					for (final String tIndex : indices)
+					{
+						if (new WildcardString(pIndex)
+						.equals(new WildcardString(tIndex))) {
+							log.debug("Index "+pIndex+" match " + tIndex + "");
+							indexMatch=true;
+							break indexloop;
 
+						}else {
+							log.debug("Index "+pIndex+" not match " + tIndex + "");
+						}
+						
+					}
+				}
+
+				if(!indexMatch)
+				{
+					
+					log.debug("Not all indexes match, so skip this permission ["
+							+ p.indices + " != " + indices + "]");
+					continue permloop;
+				}
+				
+				
 			}
 			
 			
@@ -455,7 +501,7 @@ public abstract class PermEvaluator<T> {
 	}
 
 	// TODO remove WildcardIpOrHostname class
-	private static class WildcardIpOrHostname {
+	private static class WildcardString {
 		// 192.*.168.*
 		// server*:domain.*.com
 		private final String wildcardIpOrHostname;
@@ -463,7 +509,7 @@ public abstract class PermEvaluator<T> {
 		// private static final ESLogger log = Loggers
 		// .getLogger(PermEvaluator.class);
 
-		public WildcardIpOrHostname(final String wildcardIpOrHostname) {
+		public WildcardString(final String wildcardIpOrHostname) {
 			super();
 			this.wildcardIpOrHostname = wildcardIpOrHostname;
 		}
@@ -484,7 +530,7 @@ public abstract class PermEvaluator<T> {
 			if (this.getClass() != obj.getClass()) {
 				return false;
 			}
-			final WildcardIpOrHostname other = (WildcardIpOrHostname) obj;
+			final WildcardString other = (WildcardString) obj;
 
 			final Pattern p = Pattern.compile(this.getEscaped());
 			final Matcher m = p.matcher(other.wildcardIpOrHostname);

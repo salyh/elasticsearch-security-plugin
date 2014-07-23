@@ -1,0 +1,19 @@
+{
+			 "rules": [
+			 
+			    {
+				 	
+				 	"permission" : "NONE"
+			 	},
+			 	{
+				 	"hosts" : [ "127.0.0.1" ],
+				 	"indices" :[ "testindex-*" ],
+				 	"permission" : "ALL"
+			 	},
+			 	{
+				 	"hosts" : [ "127.0.0.1" ],
+				 	"indices" :[ "*testindex*" ],
+				 	"permission" : "READWRITE"
+			 	}
+			 ]		 		 
+}
