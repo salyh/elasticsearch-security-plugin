@@ -12,13 +12,14 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.xcontent.XContentBuilder;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentHelper;
+import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestRequest.Method;
+import org.elasticsearch.rest.RestResponse;
 import org.elasticsearch.rest.RestStatus;
-import org.elasticsearch.rest.XContentRestResponse;
-import org.elasticsearch.rest.XContentThrowableRestResponse;
-import org.elasticsearch.rest.action.support.RestXContentBuilder;
 
 public class SecurityUtil {
 
@@ -255,8 +256,9 @@ public class SecurityUtil {
 	public static void send(final RestRequest request,
 			final RestChannel channel, final RestStatus status, final String arg) {
 		try {
-			final XContentBuilder builder = RestXContentBuilder
-					.restContentBuilder(request);
+
+			final XContentBuilder builder = channel.newBuilder();
+	
 			builder.startObject();
 			builder.field("status", status.getStatus());
 
@@ -265,12 +267,11 @@ public class SecurityUtil {
 			}
 
 			builder.endObject();
-			channel.sendResponse(new XContentRestResponse(request, status,
-					builder));
+			channel.sendResponse(new BytesRestResponse(status, builder));
 		} catch (final Exception e) {
 			log.error("Failed to send a response.", e);
 			try {
-				channel.sendResponse(new XContentThrowableRestResponse(request,
+				channel.sendResponse(new BytesRestResponse(channel,
 						e));
 			} catch (final IOException e1) {
 				log.error("Failed to send a failure response.", e1);

@@ -9,9 +9,11 @@ import java.util.concurrent.CountDownLatch;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
+import org.elasticsearch.common.bytes.BytesReference;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.logging.ESLogger;
 import org.elasticsearch.common.logging.Loggers;
+import org.elasticsearch.common.xcontent.XContent;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentHelper;
@@ -23,11 +25,11 @@ import org.elasticsearch.plugins.security.filter.PermDlsEvaluator;
 import org.elasticsearch.plugins.security.service.SecurityService;
 import org.elasticsearch.plugins.security.service.permission.DlsPermission;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
+import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestRequest;
 import org.elasticsearch.rest.RestResponse;
-import org.elasticsearch.rest.XContentRestResponse;
 
-public class TomcatHttpServerRestChannel implements HttpChannel {
+public class TomcatHttpServerRestChannel extends HttpChannel {
 
 	protected final ESLogger log = Loggers.getLogger(this.getClass());
 
@@ -47,6 +49,7 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 			final TomcatHttpServerRestRequest restRequest,
 			final HttpServletResponse resp,
 			final SecurityService securityService) {
+		super(restRequest);
 		this.securityService = securityService;
 		this.restRequest = restRequest;
 		this.resp = resp;
@@ -87,59 +90,26 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		try {
 
 			log.debug("RestResponse class " +response.getClass());
-
-			if(!(response instanceof XContentRestResponse))
-			{
-				
-				int contentLength = response.contentLength();
-	            if (response.prefixContentLength() > 0) {
-	                contentLength += response.prefixContentLength();
-	            }
-	            if (response.suffixContentLength() > 0) {
-	                contentLength += response.suffixContentLength();
-	            }
-	            resp.setContentLength(contentLength);
+			
+			if(enableDls) {
+				BytesReference modifiedContent = applyDls((BytesRestResponse)response);				
+				int contentLength = modifiedContent.length();
+				resp.setContentLength(contentLength);
+				final ServletOutputStream out = resp.getOutputStream();
+				modifiedContent.writeTo(out);
+				out.close();
+			
+			} else {
+				int contentLength = response.content().length();
+				resp.setContentLength(contentLength);
 	            ServletOutputStream out = resp.getOutputStream();
-	            if (response.prefixContent() != null) {
-	                out.write(response.prefixContent(), 0, response.prefixContentLength());
-	            }
-	            out.write(response.content(), 0, response.contentLength());
-	            if (response.suffixContent() != null) {
-	                out.write(response.suffixContent(), 0, response.suffixContentLength());
-	            }
-	            out.close();
-	            return;
+	            response.content().writeTo(out);
+                out.close();
 			}
+			
 
-			final XContentBuilder modifiedContent = enableDls ? applyDls((XContentRestResponse)response) : ((XContentRestResponse) response)
-					.builder();
 
-			int contentLength = modifiedContent.bytes().length();
-			if (response.prefixContentLength() > 0) {
-				contentLength += response.prefixContentLength();
-			}
-			if (response.suffixContentLength() > 0) {
-				contentLength += response.suffixContentLength();
-			}
-
-			resp.setContentLength(contentLength);
-
-			final ServletOutputStream out = resp.getOutputStream();
-			if (response.prefixContent() != null) {
-
-				out.write(response.prefixContent(), 0,
-						response.prefixContentLength());
-			}
-
-			out.write(modifiedContent.bytes().toBytes(), 0, modifiedContent
-					.bytes().length());
-
-			if (response.suffixContent() != null) {
-
-				out.write(response.suffixContent(), 0,
-						response.suffixContentLength());
-			}
-			out.close();
+			
 		} catch (final Exception e) {
 			log.error(e.toString(), e);
 			sendFailure = e;
@@ -148,7 +118,7 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		}
 	}
 
-	protected XContentBuilder applyDls(final XContentRestResponse xres)
+	protected BytesReference applyDls(final BytesRestResponse xres)
 			throws IOException, MalformedConfigurationException {
 
 
@@ -159,8 +129,8 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 			if (securityService
 					.getHostAddressFromRequest(restRequest)
 					.isLoopbackAddress()) {
-				return xres.builder();
-
+				return xres.content();
+						
 			} else {
 				throw new IOException("Only allowed from localhost (loopback)");
 			}
@@ -170,7 +140,7 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		if (xres.status().getStatus() < 200
 				|| xres.status().getStatus() >= 300) {
 
-			return xres.builder();
+			return xres.content();
 		}
 
 		if (!restRequest.path().contains("_search")
@@ -178,7 +148,7 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 				&& !restRequest.path().contains("_mlt")
 				&& !restRequest.path().contains("_suggest")) {
 
-			return xres.builder();
+			return xres.content();
 		}
 
 		final List<String> dlsTokens = new PermDlsEvaluator(
@@ -196,12 +166,12 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 		// this.log.debug("orig json: " + xres.builder().string());
 
 		final List<DlsPermission> perms = securityService
-				.parseDlsPermissions(xres.builder().bytes());
+				.parseDlsPermissions(xres.content());
 
 		// TODO check against the tokens
 
 		final Tuple<XContentType, Map<String, Object>> mapTuple = XContentHelper
-				.convertToMap(xres.builder().bytes().toBytes(), true);
+				.convertToMap(xres.content().toBytes(), true);
 
 		final List<String> fields = new ArrayList<String>();
 		fields.add("_shards*");
@@ -239,7 +209,7 @@ public class TomcatHttpServerRestChannel implements HttpChannel {
 
 		final XContentBuilder sourceToBeReturned = XContentFactory
 				.contentBuilder(mapTuple.v1()).map(filteredSource);
-		return sourceToBeReturned;
+		return sourceToBeReturned.bytes();
 
 	}
 
