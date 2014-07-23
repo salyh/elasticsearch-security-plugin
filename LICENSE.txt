@@ -1,0 +1,4 @@
+Copyright 2013-2014 Hendrik Saly
+
+Licensed under the "No License" license (github default license): 
+http://choosealicense.com/licenses/no-license/

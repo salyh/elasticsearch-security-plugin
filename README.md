@@ -29,7 +29,7 @@ As of now two security modules are implemented:
 (Until the first release is out you have to build this plugin yourself with maven or download from the github release page and install manually)
 
 Branches:
-* master for Elasticsearch 1.0.0 - 1.x.x
+* master for Elasticsearch 1.2.0 - 1.2.x
 * ea0.9 for Elasticsearch 0.90.10 - 0.90.x
 
 Prerequisites:
@@ -422,3 +422,10 @@ TODO<br>
 * Check restrict bulk requests and responses
 * Add "at least authenticated" user rule
 * Provide rest api endpoint for displaying current security rules/status
+
+<h3>License</h3>
+Copyright 2013-2014 Hendrik Saly
+
+Licensed under the "No License" license (github default): 
+http://choosealicense.com/licenses/no-license/
+
