@@ -222,7 +222,7 @@ public abstract class PermEvaluator<T> {
 					
 					for (final String tType : types)
 					{
-						if (isWildcardMatch(tType, pType)) {
+						if (isWildcardMatch(pType, tType)) {
 							log.debug("Type "+pType+" match " + tType + "");
 							typeMatch=true;
 							break typeloop;
@@ -253,7 +253,7 @@ public abstract class PermEvaluator<T> {
 					
 					for (final String tIndex : indices)
 					{
-						if (isWildcardMatch(tIndex, pIndex)) {
+						if (isWildcardMatch(pIndex, tIndex)) {
 							log.debug("Index "+pIndex+" match " + tIndex + "");
 							indexMatch=true;
 							break indexloop;
@@ -497,22 +497,14 @@ public abstract class PermEvaluator<T> {
 
 	
 	private boolean isWildcardMatch(String a, String b) {
-		
-		String escapedA = a.replace(".", "\\.").replace("*",
-				".*");
-		
-		Pattern p = Pattern.compile(escapedA);
-		Matcher m = p.matcher(b);
-		if(m.matches()){
-			return true;
-		} else {
-			String escapedB = b.replace(".", "\\.").replace("*",
-					".*");
-			
-			p = Pattern.compile(escapedB);
-			m = p.matcher(a);
-			return m.matches();
+		// Not fully reliable but good enough for a non-malicious environment
+		// \ must be first!
+		String toQuote =  "\\.^$?+()[]{}";
+		for (int i = 0; i < toQuote.length(); i++) {
+			String c = toQuote.substring(i, i + 1);
+			a = a.replace(c, "\\" + c);
 		}
+		a = a.replace("*", ".*");
+		return b.matches(a);
 	}
-	
 }
