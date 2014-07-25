@@ -33,7 +33,7 @@ Branches:
 * ea0.9 for Elasticsearch 0.90.10 - 0.90.x
 
 Prerequisites:
-* Open JDK 6/7 or Oracle 7 JRE
+* Open JDK 7 or Oracle 7 JRE
 * Elasticsearch 0.90.10 or higher
 * If Kerberos is used you need an KDC like  AD, MIT or Heimdal
 
