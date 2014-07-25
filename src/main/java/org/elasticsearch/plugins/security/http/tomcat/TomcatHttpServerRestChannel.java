@@ -72,20 +72,28 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 	public void sendResponse(final RestResponse response) {
 
 		resp.setContentType(response.contentType());
-		resp.addHeader("Access-Control-Allow-Origin", "*");
+		
+		//CORS
+		resp.addHeader("Access-Control-Allow-Origin", "*"); 
+		//enhancing the list of allowed method list to meet the requirements of Kibana (contributed by Ram Kotamaraja)
+		resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
+		resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Content-Length, X-HTTP-Method-Override, Origin, Accept, Authorization");
+		//resp.addHeader("Access-Control-Allow-Credentials", "true");
+		resp.addHeader("Cache-Control", "max-age=0");
+			
+		
 		if (response.status() != null) {
 			resp.setStatus(response.status().getStatus());
 		} else {
 			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
-		if (restRequest.method() == RestRequest.Method.OPTIONS) {
+		/*if (restRequest.method() == RestRequest.Method.OPTIONS) {
 			// TODO: also add more access control parameters
 			resp.addHeader("Access-Control-Max-Age", "1728000");
 			
-			//enhancing the list of allowed method list to meet the requirements of Kibana (contributed by Ram Kotamaraja)
-			resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
-			resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Content-Length");
-		}
+			
+		
+		}*/
 		try {
 
 			log.debug("RestResponse class " +response.getClass());
