@@ -6,38 +6,38 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.plugins.security.MalformedConfigurationException;
 import org.elasticsearch.plugins.security.service.permission.PermEvaluator;
 import org.elasticsearch.plugins.security.service.permission.UserRoleCallback;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+
+import static org.junit.Assert.*;
 
 /**
  * Unit test for simple App.
  */
-public class SecurityPermTests extends TestCase {
+public class SecurityPermTests{
 
-	/**
-	 * Create the test case
-	 * 
-	 * @param testName
-	 *            name of the test case
-	 */
-	public SecurityPermTests(final String testName) {
-		super(testName);
+	@Rule 
+	public TestName name = new TestName();
+	
+	@Rule
+    public TestWatcher testWatcher = new TestWatcher() {
+        @Override
+        protected void starting(final Description description) {
+            String methodName = description.getMethodName();
+            String className = description.getClassName();
+            className = className.substring(className.lastIndexOf('.') + 1);
+            System.out.println("Starting JUnit-test: " + className + " " + methodName);
+        }
+    };
 
-	}
-
-	/**
-	 * @return the suite of tests being tested
-	 */
-	public static Test suite() {
-		return new TestSuite(SecurityPermTests.class);
-	}
-
+    @Test
 	public void testEmptyConfigException() {
 
 		final List<String> indices = new ArrayList<String>();
@@ -60,7 +60,7 @@ public class SecurityPermTests extends TestCase {
 		return sw.toString();
 
 	}
-
+	@Test
 	public void testDefault() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -71,7 +71,7 @@ public class SecurityPermTests extends TestCase {
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("8.8.8.8"), null) == PermLevel.ALL);
 	}
-
+	@Test
 	public void testNormalCases() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -90,7 +90,7 @@ public class SecurityPermTests extends TestCase {
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("1.2.3.4"), null) == PermLevel.NONE);
 	}
-
+	@Test
 	public void testNormalCasesWithUserRoleTypes() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -112,7 +112,7 @@ public class SecurityPermTests extends TestCase {
 				.getByName("8.8.8.8"), new TestCallback("kirk", "unknown")) == PermLevel.ALL);
 
 	}
-
+	@Test
 	public void testNormalIndicesCases() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -129,7 +129,7 @@ public class SecurityPermTests extends TestCase {
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("1.2.3.4"), null) == PermLevel.NONE);
 	}
-
+	@Test
 	public void testWildcardIndicesCases() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -147,7 +147,7 @@ public class SecurityPermTests extends TestCase {
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("1.2.3.4"), null) == PermLevel.NONE);
 	}
-
+	@Test
 	public void testWildcardMultipleIndicesCases() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -167,7 +167,7 @@ public class SecurityPermTests extends TestCase {
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("1.2.3.4"), null) == PermLevel.ALL);
 	}
-	
+	@Test
 	public void testWildcardIndicesCases2() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -181,7 +181,7 @@ public class SecurityPermTests extends TestCase {
 				InetAddress.getByName("127.0.0.1"), null) == PermLevel.READWRITE);
 
 	}
-	
+	@Test
 	public void testWildcardIndicesCases22() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -195,7 +195,7 @@ public class SecurityPermTests extends TestCase {
 				InetAddress.getByName("127.0.0.1"), null) == PermLevel.ALL);
 
 	}
-
+	@Test
 	public void testWildcardCases() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -213,7 +213,7 @@ public class SecurityPermTests extends TestCase {
 		assertTrue(evaluator.evaluatePerm(indices, null,
 				InetAddress.getByName("103.2.3.4"), null) == PermLevel.NONE);
 	}
-
+	@Test
 	public void testNormalCasesFQHN() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -228,7 +228,7 @@ public class SecurityPermTests extends TestCase {
 				InetAddress.getByName("google-public-dns-a.google.com"), null) == PermLevel.NONE);
 
 	}
-
+	@Test
 	public void testWildcardCasesFQHN() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -243,7 +243,7 @@ public class SecurityPermTests extends TestCase {
 				InetAddress.getByName("google-public-dns-a.google.com"), null) == PermLevel.NONE);
 
 	}
-
+	@Test
 	public void testBadFormat() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -262,7 +262,7 @@ public class SecurityPermTests extends TestCase {
 		}
 
 	}
-
+	@Test
 	public void testNoDefault() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();
@@ -280,7 +280,7 @@ public class SecurityPermTests extends TestCase {
 		}
 
 	}
-
+	@Test
 	public void testMalformedStructure() throws Exception {
 
 		final List<String> indices = new ArrayList<String>();

@@ -51,16 +51,33 @@ import org.ietf.jgss.Oid;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestName;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import com.github.tlrx.elasticsearch.test.EsSetup;
 
 public abstract class AbstractUnitTest {
 
-
+	@Rule 
+	public TestName name = new TestName();
 	private JestClient client;
 	protected final Builder settingsBuilder;
 	protected Map<String, Object> headers = new HashMap<String, Object>();
 
+	
+	@Rule
+    public TestWatcher testWatcher = new TestWatcher() {
+        @Override
+        protected void starting(final Description description) {
+            String methodName = description.getMethodName();
+            String className = description.getClassName();
+            className = className.substring(className.lastIndexOf('.') + 1);
+            System.out.println("Starting JUnit-test: " + className + " " + methodName);
+        }
+    };
+	
 	protected AbstractUnitTest() {
 		super();
 
