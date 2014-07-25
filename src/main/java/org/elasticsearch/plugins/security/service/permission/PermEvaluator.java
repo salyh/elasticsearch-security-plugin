@@ -42,7 +42,7 @@ public abstract class PermEvaluator<T> {
 
 		final List<Perm<T>> perms = new ArrayList<Perm<T>>();
 
-		final List<WildcardString> matchList = new ArrayList<WildcardString>();
+		//final List<WildcardString> matchList = new ArrayList<WildcardString>();
 
 		try {
 
@@ -132,18 +132,16 @@ public abstract class PermEvaluator<T> {
 					"No default configuration found");
 		}
 
-		for (final Perm<T> p : perms) {
+		/*for (final Perm<T> p : perms) {
 
 			for (final String ip : p.inetAddresses) {
-				matchList.add(new WildcardString(ip));
+				//matchList.add(new WildcardString(ip));
 			}
-		}
+		}*/
 
-		final WildcardString clientHostName = new WildcardString(
-				hostAddress.getHostName());
-		final WildcardString clientHostIp = new WildcardString(
-				hostAddress.getHostAddress());
-
+		final String clientHostName = hostAddress.getHostName();
+		final String clientHostIp = hostAddress.getHostAddress();
+		
 		permloop: for (final Perm<T> p : perms) {
 
 			if (p.isDefault()) {
@@ -191,10 +189,8 @@ public abstract class PermEvaluator<T> {
 
 			if (!p.inetAddresses.contains("*") && !p.inetAddresses.isEmpty()) {
 				for (final String pinetAddress : p.inetAddresses) {
-					if (new WildcardString(pinetAddress)
-					.equals(clientHostName)
-					|| new WildcardString(pinetAddress)
-					.equals(clientHostIp)) {
+					if (isWildcardMatch(pinetAddress, clientHostName)
+					|| isWildcardMatch(pinetAddress, clientHostIp)) {
 
 						log.debug("Host adress " + pinetAddress + " match");
 						_host = pinetAddress;
@@ -207,10 +203,10 @@ public abstract class PermEvaluator<T> {
 				if (_host == null) {
 
 					log.debug("Host adress ("
-							+ clientHostIp.wildcardIpOrHostname
+							+ clientHostIp
 							+ "(ip) and "
-							+ clientHostName.wildcardIpOrHostname
-							+ " (hostname)does not match, so skip this permission");
+							+ clientHostName
+							+ " (hostname) does not match, so skip this permission");
 					continue permloop;
 
 				}
@@ -226,8 +222,7 @@ public abstract class PermEvaluator<T> {
 					
 					for (final String tType : types)
 					{
-						if (new WildcardString(pType)
-						.equals(new WildcardString(tType))) {
+						if (isWildcardMatch(tType, pType)) {
 							log.debug("Type "+pType+" match " + tType + "");
 							typeMatch=true;
 							break typeloop;
@@ -240,7 +235,7 @@ public abstract class PermEvaluator<T> {
 				}
 				
 				if(!typeMatch){
-					log.debug("Not all types match, so skip this permission ["
+					log.debug("No type matches, so skip this permission ["
 							+ p.types + " != " + types + "]");
 					continue permloop;
 				}
@@ -258,8 +253,7 @@ public abstract class PermEvaluator<T> {
 					
 					for (final String tIndex : indices)
 					{
-						if (new WildcardString(pIndex)
-						.equals(new WildcardString(tIndex))) {
+						if (isWildcardMatch(tIndex, pIndex)) {
 							log.debug("Index "+pIndex+" match " + tIndex + "");
 							indexMatch=true;
 							break indexloop;
@@ -274,7 +268,7 @@ public abstract class PermEvaluator<T> {
 				if(!indexMatch)
 				{
 					
-					log.debug("Not all indexes match, so skip this permission ["
+					log.debug("No index matches, so skip this permission ["
 							+ p.indices + " != " + indices + "]");
 					continue permloop;
 				}
@@ -500,58 +494,24 @@ public abstract class PermEvaluator<T> {
 		return one.containsAll(two) && two.containsAll(one);
 	}
 
-	// TODO remove WildcardIpOrHostname class
-	private static class WildcardString {
-		// 192.*.168.*
-		// server*:domain.*.com
-		private final String wildcardIpOrHostname;
-
-		// private static final ESLogger log = Loggers
-		// .getLogger(PermEvaluator.class);
-
-		public WildcardString(final String wildcardIpOrHostname) {
-			super();
-			this.wildcardIpOrHostname = wildcardIpOrHostname;
-		}
-
-		@Override
-		public int hashCode() {
-			throw new RuntimeException("not implemented");
-		}
-
-		@Override
-		public boolean equals(final Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (this.getClass() != obj.getClass()) {
-				return false;
-			}
-			final WildcardString other = (WildcardString) obj;
-
-			final Pattern p = Pattern.compile(this.getEscaped());
-			final Matcher m = p.matcher(other.wildcardIpOrHostname);
-			final boolean match = m.matches();
-
-			/*
-			 * if (log.isDebugEnabled()) { log.debug("REGEX " +
-			 * this.getEscaped() + " on " + other.wildcardIpOrHostname +
-			 * " matched? " + match); }
-			 */
-
-			return match;
-
-		}
-
-		private String getEscaped() {
-			return this.wildcardIpOrHostname.replace(".", "\\.").replace("*",
+	
+	private boolean isWildcardMatch(String a, String b) {
+		
+		String escapedA = a.replace(".", "\\.").replace("*",
+				".*");
+		
+		Pattern p = Pattern.compile(escapedA);
+		Matcher m = p.matcher(b);
+		if(m.matches()){
+			return true;
+		} else {
+			String escapedB = b.replace(".", "\\.").replace("*",
 					".*");
-
+			
+			p = Pattern.compile(escapedB);
+			m = p.matcher(a);
+			return m.matches();
 		}
-
 	}
-
+	
 }
