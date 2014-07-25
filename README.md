@@ -410,8 +410,41 @@ This rule match if (the user is u1 or u2) and (has the role rol1 or role2) <br>
 and (issues the request from host1 or host2) and (operates on i1 or i2 or both)<br>
 and uses (documents of types t1 or t2 or both)<br>
 
+
+
+<h3>elasticsearch-security-plugin for Kibana</h3>
+
+Ram Kotamaraja provided some enhancements to make the plugin work with Kibana 3.
+For details see https://github.com/rkotamaraja/elasticsearch-security-plugin/commits/master and https://github.com/salyh/elasticsearch-security-plugin/pull/5 
+Here is the documentation for this:
+
+Added a new security index to provide security around kibana 3.0.0 fifth milestone. Kibana uses a generic search query such as http://elasticsearchhost:9200/testindex1/_search. To provide security around queries like that, the plugin is modified to support additional kibana configuration. Configuration is as follows. 
+
+<pre><code>
+PUT /securityconfiguration/actionpathfilter/kibana
+{
+             "rules": [
+                {
+                    "index" : "testindex1",
+                    "types" : [ "testtype1", "testtype5", "testtype13", "testtype7"]
+                },
+                {
+                    "index" : "testindex2",
+                    "types" : [ "testtype19", "testtype21" ]
+                },
+                {
+                    "index" : "testdata",
+                    "types" : [ ""testtype1", "testtype2" ]
+                }
+	     ]
+}
+
+</code></pre>
+
+This configuration allows users to specify which types in a given index are accessible by users. 
+
 <h3>Contributers</h3>
-* Ram Kotamaraja
+* Ram Kotamaraja (https://github.com/rkotamaraja)
 
 <p>
 <p>

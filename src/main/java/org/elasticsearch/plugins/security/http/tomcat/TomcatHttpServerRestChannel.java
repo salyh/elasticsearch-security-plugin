@@ -82,8 +82,7 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 			// TODO: also add more access control parameters
 			resp.addHeader("Access-Control-Max-Age", "1728000");
 			
-			//@author - Ram Kotamaraja
-			//enhancing the list of allowed method list to meet the requirements of Kibana
+			//enhancing the list of allowed method list to meet the requirements of Kibana (contributed by Ram Kotamaraja)
 			resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
 			resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Content-Length");
 		}

@@ -36,7 +36,7 @@ HttpRequest {
 
 	private final Map<String, String> params;
 
-	private final BytesReference content;
+	private BytesReference content;
 
 	private final String opaqueId;
 
@@ -232,5 +232,32 @@ HttpRequest {
 	}
 
 
+	//next three methods contributed by Ram Kotamaraja
+	
+	/**
+	 * Setter Method for content
+	 */
+	 public void setContent(BytesReference content) {
+		 this.content = content;
+	 }
 
+	 /**
+	 * Getter Method for returning content
+	 * @return BytesReference 
+	 */
+	 public BytesReference getContent() {
+	 		return content;
+	 }
+	 
+	 /**
+	 * Method added to modify the request query based on the authorization permission settings 
+	 * in the security configuration. This method will set the modified content in request.
+	 * @param requestContentAttribute
+	 * @param content
+	 */
+	 public void setAttribute(String requestContentAttribute,
+			BytesReference content) {
+	 		this.request.setAttribute(requestContentAttribute, content);
+	 		
+	 }
 }

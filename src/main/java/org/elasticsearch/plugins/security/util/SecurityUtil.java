@@ -154,11 +154,11 @@ public class SecurityUtil {
 
 		}
 */			
-/**
-*@author Ram Kotamaraja
-*The above commented code handles code if there is a '/' at the end of the elastic search indices. Code is modified to handle indices where there is no '/' after it.
-*Code below also handles the root level queries like '/_mapping', '/_settings' etc.			
-*/
+		/**
+		* (contributed by Ram Kotamaraja)
+		*The above commented code handles code if there is a '/' at the end of the elastic search indices. Code is modified to handle indices where there is no '/' after it.
+		*Code below also handles the root level queries like '/_mapping', '/_settings' etc.			
+		*/
 
 		//Code modification START - Ram Kotamaraja
 		if ((path.indexOf('/', 1)) != -1) {

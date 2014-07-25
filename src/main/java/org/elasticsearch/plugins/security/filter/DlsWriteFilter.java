@@ -27,7 +27,6 @@ import org.elasticsearch.rest.RestStatus;
  * NOT USED YET Protecting documents/fields from being updated or deletet on
  * dlstoken basis
  * 
- * @author salyh
  * 
  */
 public class DlsWriteFilter extends SecureRestFilter {

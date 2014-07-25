@@ -11,6 +11,7 @@ import org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerRestChanne
 import org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerRestRequest;
 import org.elasticsearch.plugins.security.http.tomcat.TomcatUserRoleCallback;
 import org.elasticsearch.plugins.security.service.SecurityService;
+import org.elasticsearch.plugins.security.util.EditableRestRequest;
 import org.elasticsearch.plugins.security.util.SecurityUtil;
 import org.elasticsearch.rest.RestFilterChain;
 import org.elasticsearch.rest.RestStatus;
@@ -83,6 +84,13 @@ public class ActionPathFilter extends SecureRestFilter {
 						"No permission (for read actions)");
 				return;
 			}
+			
+			// Ram Kotamarja - START
+			// adding code to modify request modification before it hits elastic
+			// search to apply the search filters
+			modifiyKibanaRequest(request, channel);
+			// Ram Kotamaraja - END
+			
 
 			filterChain.continueProcessing(request, channel);
 			return;
@@ -105,12 +113,12 @@ public class ActionPathFilter extends SecureRestFilter {
 	}
 	
 	/**
-	 * @author - Ram Kotamaraja Method added to modify the request on the fly to
-	 *         allow it to process generic queries coming from kibana by
-	 *         validating against the security framework
+	 * Method added to modify the request on the fly to
+	 * allow it to process generic queries coming from kibana by
+	 * validating against the security framework (contributed by Ram Kotamaraja)
 	 * @param request
 	 */
-	private void massageKibanaRequest(
+	private void modifiyKibanaRequest(
 			final TomcatHttpServerRestRequest request,
 			final TomcatHttpServerRestChannel channel) {
 
@@ -130,8 +138,7 @@ public class ActionPathFilter extends SecureRestFilter {
 			kibanaPermLevel = securityService.getXContentSecurityConfiguration(
 					getType(), getKibanaId());
 		} catch (Exception e) {
-			log.debug("No Kibana configuration found, so continuing the rest of the process");
-			//log.debug("Generic error: ", e);
+			log.debug("No Kibana configuration found, so continuing the rest of the process: "+e.getMessage());
 			return;
 		}
 
@@ -143,8 +150,8 @@ public class ActionPathFilter extends SecureRestFilter {
 						.getIndices(request));
 			}
 
-			String reqContent = request.content().toUtf8();
-			String massagedContent = reqContent;
+			final String reqContent = request.content().toUtf8();
+			String modifiedContent = reqContent;
 
 			// checking where the original request has any types
 			List<String> requestTypes = SecurityUtil.getTypes(request);
@@ -157,7 +164,7 @@ public class ActionPathFilter extends SecureRestFilter {
 				if (kibanaTypesList != null) {
 
 					// determine authorized types list
-					// try {
+					
 
 					Iterator<String> kibanaTypesItr = kibanaTypesList
 							.iterator();
@@ -181,48 +188,48 @@ public class ActionPathFilter extends SecureRestFilter {
 														.getSettings()
 														.get("security.ssl.userattribute")));
 
-						// log.debug("Kibana perm level = "+permLevel);
+						log.debug("Kibana perm level = "+permLevel);
 
 						if (!permLevel.equals(PermLevel.NONE)) {
 							authorizedTypesList.addAll(kibanaType);
 						}
 					}
 
-					// authorizedTypesList = kibanaTypesList;
+					
 
-					// log.debug("Processing kibana types  "+ kibanaTypesList);
-					// log.debug("request Content =  "+ reqContent);
+					log.debug("Processing kibana types  "+ kibanaTypesList);
+					log.debug("request Content =  "+ reqContent);
 
 					String kibanaFilterStarter = "\"must\":[";
 					int beginIndex = reqContent.indexOf(kibanaFilterStarter);
-					// log.debug("filterStarter index =  "+ beginIndex );
+					
 					if (beginIndex > 0) {
 						String preReqContent = reqContent.substring(0,
 								beginIndex + kibanaFilterStarter.length());
 						String postReqContent = reqContent.substring(beginIndex
 								+ kibanaFilterStarter.length());
 
-						massagedContent = preReqContent
+						modifiedContent = preReqContent
 								+ "{\"or\": {\"filters\":[";
 
 						if (authorizedTypesList != null) {
 							Iterator<String> authorizedTypesItr = authorizedTypesList
 									.iterator();
 							while (authorizedTypesItr.hasNext()) {
-								massagedContent += "{\"type\":{\"value\":\""
+								modifiedContent += "{\"type\":{\"value\":\""
 										+ authorizedTypesItr.next().toString()
 										+ "\"}},";
 							}
-							massagedContent = massagedContent.substring(0,
-									massagedContent.length() - 1);
+							modifiedContent = modifiedContent.substring(0,
+									modifiedContent.length() - 1);
 						}
 
-						massagedContent += "]}}," + postReqContent;
-						log.debug("massaged request = " + massagedContent);
-						//request.setContent(new BytesArray(massagedContent));
-						//request.setAttribute(
-							//	TomcatHttpServerRestRequest.REQUEST_CONTENT_ATTRIBUTE,
-								//request.content());
+						modifiedContent += "]}}," + postReqContent;
+						log.debug("modified request content = " + modifiedContent);
+												
+						request.setContent(new BytesArray(modifiedContent));
+						request.setAttribute(TomcatHttpServerRestRequest.REQUEST_CONTENT_ATTRIBUTE, request.getContent());
+
 					}
 				}
 			}
@@ -245,8 +252,8 @@ public class ActionPathFilter extends SecureRestFilter {
 	}
 
 	/**
-	 * @author Ram Kotamaraja Method to return the default id
-	* @return String - default id string
+	 * Method to return the default id (contributed by Ram Kotamaraja)
+	 * @return String - default id string
 	 */
 	 protected String getKibanaId() {
 				return "kibana";

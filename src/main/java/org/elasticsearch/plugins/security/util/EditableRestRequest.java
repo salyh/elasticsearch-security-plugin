@@ -1,5 +1,6 @@
 package org.elasticsearch.plugins.security.util;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -29,6 +30,13 @@ public class EditableRestRequest extends RestRequest {
 		hasContent = innerRestquest.hasContent();
 		contentUnsafe = innerRestquest.contentUnsafe();
 
+	}
+	
+	public void addParam(String key, String value){
+		if(params==null){
+			params=new HashMap<String, String>();
+		}
+		params.put(key, value);
 	}
 
 	public void setContent(final BytesReference content) {

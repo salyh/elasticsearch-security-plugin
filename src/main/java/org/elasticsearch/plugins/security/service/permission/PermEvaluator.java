@@ -277,8 +277,9 @@ public abstract class PermEvaluator<T> {
 			}
 			
 			
-			//@author - Ram Kotamaraja - START
+			//START
 			//added condition to check if indices provided are empty to validate the matching of index. This is required to allow requesting metadata queries like /_mapping, /_setting etc.
+			//(contributed by Ram Kotamaraja)
 			else
 			if(indices.isEmpty() && !p.indices.isEmpty() && !p.indices.contains("*") ){ 
 
@@ -287,7 +288,7 @@ public abstract class PermEvaluator<T> {
 				continue permloop;
 				
 			}
-			//@author - Ram Kotamaraja - END
+			//END
 
 			log.debug("All rules match, will apply " + p);
 			return p.permLevel;

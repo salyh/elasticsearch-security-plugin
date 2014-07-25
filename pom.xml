@@ -8,13 +8,22 @@
 
 	<groupId>com.github.salyh.elasticsearch</groupId>
 	<artifactId>elasticsearch-security-plugin</artifactId>
-	<version>0.0.2.Beta6-ea1.2</version>
+	<version>0.0.2.Beta7-ea1.2</version>
 	<packaging>jar</packaging>
 
 	<name>elasticsearch-security-plugin</name>
 	<description>Provide security related features for elasticsearch</description>
 	<url>https://github.com/salyh/elasticsearch-security-plugin</url>
 	<inceptionYear>2013</inceptionYear>
+
+	<licenses>
+		<license>
+			<name>No License license - Copyright 2013-2014 Hendrik Saly</name>
+			<url>http://choosealicense.com/licenses/no-license</url>
+			<distribution>manual</distribution>
+			<comments>Copyright 2013-2014 Hendrik Saly</comments>
+		</license>
+	</licenses>
 
 	<properties>
 		<elasticsearch.version>1.2.2</elasticsearch.version>
@@ -42,6 +51,13 @@
 			<id>salyh</id>
 		</developer>
 	</developers>
+
+	<contributors>
+    <contributor>
+      <name>Ram Kotamaraja</name>
+      <url>https://github.com/rkotamaraja</url>
+     </contributor>
+  </contributors>
 
 
 	<parent>

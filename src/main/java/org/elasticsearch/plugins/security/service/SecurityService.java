@@ -296,7 +296,7 @@ AbstractLifecycleComponent<SecurityService> {
 	}
 	
 	/**
-	 * @author Ram Kotamaraja
+	 * (contributed by Ram Kotamaraja)
 	 * @param indices - List of ES indices. Now supports only one index at a time. 
 	 * @return returns list of types configured in kibana security configuration
 	 * @throws IOException
