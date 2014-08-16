@@ -49,7 +49,7 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 
 		executeIndex("test_normal.json","securityconfiguration","actionpathfilter","actionpathfilter",true);
 		executeIndex("dls_default_test_allowall.json","securityconfiguration","dlspermissions","default",true);
-		executeIndex("fls_test_normal.json","securityconfiguration","dlspermissions","dlspermissions",true);
+		executeIndex("dls_test_normal.json","securityconfiguration","dlspermissions","dlspermissions",true);
 
 		headers.put("X-Forwarded-For", "3.1.55.2");
 		executeSearch("non_field_query.json",true);
@@ -62,7 +62,7 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 		executeIndex("dls_default_test_allowall.json",
 				"securityconfiguration", "dlspermissions", "default", true);
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
 		executeIndex("test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
@@ -80,7 +80,7 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 		executeIndex("dls_default_test_allowall.json",
 				"securityconfiguration", "dlspermissions", "default", true);
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
 		executeIndex("test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
@@ -100,7 +100,7 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 		executeIndex("dls_default_test_allowall.json",
 				"securityconfiguration", "dlspermissions", "default", true);
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
 		executeIndex("test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
@@ -122,13 +122,13 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 				"securityconfiguration", "dlspermissions", "default", true);
 		executeIndex("ur_test_normal.json", "securityconfiguration",
 				"actionpathfilter", "actionpathfilter", true);
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
-		executeIndex("fls_dummy_content.json", "twitter", "tweet", "1",
+		executeIndex("dls_dummy_content.json", "twitter", "tweet", "1",
 				true);
 		executeIndex("dls_dummy_content_without_dls.json", "twitter",
 				"tweet", "2", true);
-		executeSearch("fls_field_query.json", true);
+		executeSearch("dls_field_query.json", true);
 
 	}
 
@@ -138,14 +138,14 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 
 		executeIndex("ur_test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
 
 		executeIndex("dls_dummy_content_without_dls.json", "twitter",
 				"tweet", "1", true);
 
-		executeSearch("fls_field_query.json", true);
+		executeSearch("dls_field_query.json", true);
 
 	}
 
@@ -157,17 +157,17 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 
 		executeIndex("ur_test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
-		executeIndex("fls_dummy_content.json", "twitter",
+		executeIndex("dls_dummy_content.json", "twitter",
 				"tweet", "1", true);
 
-		executeIndex("fls_dummy_content_updt.json", "twitter",
+		executeIndex("dls_dummy_content_updt.json", "twitter",
 				"tweet", "1", true);
 
 
-		executeSearch("fls_field_query.json", true);
+		executeSearch("dls_field_query.json", true);
 
 	}
 	
@@ -176,10 +176,10 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 
 		executeIndex("ur_test_all.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
-		executeIndex("fls_dummy_content.json", "twitter",
+		executeIndex("dls_dummy_content.json", "twitter",
 				"tweet", "1", true);
 
 		JestResult res = executeSearch("test_facet_search.json", true);
@@ -197,10 +197,10 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 		
 		executeIndex("ur_test_all.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
-		executeIndex("fls_dummy_content.json", "twitter",
+		executeIndex("dls_dummy_content.json", "twitter",
 				"tweet", "1", true);
 
 		JestResult res = executeSearch("test_facet_search.json", true);
@@ -217,13 +217,13 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 		executeIndex("ur_test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
 
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
-		executeIndex("fls_dummy_content.json", "twitter",
+		executeIndex("dls_dummy_content.json", "twitter",
 				"tweet", "1", true);
 
-		executeSearch("fls_field_query.json", true);
+		executeSearch("dls_field_query.json", true);
 
 	}
 
@@ -257,7 +257,23 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 	}
 
 
+	@Test
+    public void issueDls1() throws Exception {
 
+        executeIndex("ur_test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
+
+
+        executeIndex("issues/dls1/default.json", "securityconfiguration","dlspermissions","default", true);
+        
+        executeIndex("issues/dls1/rules.json", "securityconfiguration",
+                "dlspermissions", "dlspermissions", true);
+
+        executeIndex("dls_dummy_content.json", "twitter",
+                "tweet", "1", true);
+
+        executeSearch("dls_field_query.json", true);
+
+    }
 
 
 

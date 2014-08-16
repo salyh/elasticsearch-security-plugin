@@ -24,7 +24,7 @@ import org.elasticsearch.rest.RestFilterChain;
 import org.elasticsearch.rest.RestStatus;
 
 /**
- * NOT USED YET Protecting documents/fields from being updated or deletet on
+ * NOT USED YET Protecting documents/fields from being updated or deleted on
  * dlstoken basis
  * 
  * 

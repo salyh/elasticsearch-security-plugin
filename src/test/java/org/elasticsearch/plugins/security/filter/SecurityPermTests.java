@@ -21,45 +21,18 @@ import static org.junit.Assert.*;
 /**
  * Unit test for simple App.
  */
-public class SecurityPermTests{
+public class SecurityPermTests extends AbstractPermTests{	
 
-	@Rule 
-	public TestName name = new TestName();
-	
-	@Rule
-    public TestWatcher testWatcher = new TestWatcher() {
-        @Override
-        protected void starting(final Description description) {
-            String methodName = description.getMethodName();
-            String className = description.getClassName();
-            className = className.substring(className.lastIndexOf('.') + 1);
-            System.out.println("Starting JUnit-test: " + className + " " + methodName);
-        }
-    };
-
-    @Test
+    @Test(expected=IllegalArgumentException.class)
 	public void testEmptyConfigException() {
 
 		final List<String> indices = new ArrayList<String>();
 		indices.add("testindex1");
 		indices.add("testindex2");
-
-		try {
-			new PermLevelEvaluator(null);
-			fail();
-		} catch (final Exception e) {
-			// expected
-		}
-
+		new PermLevelEvaluator(null);			
 	}
 
-	private String loadFile(final String file) throws IOException {
-
-		final StringWriter sw = new StringWriter();
-		IOUtils.copy(this.getClass().getResourceAsStream("/" + file), sw);
-		return sw.toString();
-
-	}
+	
 	@Test
 	public void testDefault() throws Exception {
 
@@ -298,30 +271,17 @@ public class SecurityPermTests{
 		}
 
 	}
+	
+	@Test
+    public void testEmptyArrays() throws Exception {
 
-	private static class TestCallback implements UserRoleCallback {
+        final PermEvaluator<?> evaluator = new PermLevelEvaluator(
+                loadFile("test_denyall_emptyarray.json"));
+       
+        assertTrue(evaluator.evaluatePerm(null, null,
+                InetAddress.getByName("8.8.8.8"), null) == PermLevel.NONE);
+            
 
-		private final String user;
-		private final String role;
-
-		protected TestCallback(final String user, final String role) {
-			super();
-			this.user = user;
-			this.role = role;
-		}
-
-		@Override
-		public String getRemoteuser() {
-			// TODO Auto-generated method stub
-			return user;
-		}
-
-		@Override
-		public boolean isRemoteUserInRole(final String role) {
-			// TODO Auto-generated method stub
-			return role.equals(this.role);
-		}
-
-	}
+    }
 
 }

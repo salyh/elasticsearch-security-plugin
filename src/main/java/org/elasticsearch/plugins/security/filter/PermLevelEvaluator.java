@@ -1,5 +1,7 @@
 package org.elasticsearch.plugins.security.filter;
 
+import java.util.List;
+
 import org.elasticsearch.plugins.security.service.permission.PermEvaluator;
 
 public class PermLevelEvaluator extends PermEvaluator<PermLevel> {
@@ -18,4 +20,11 @@ public class PermLevelEvaluator extends PermEvaluator<PermLevel> {
 	protected String getPermissionFieldName() {
 		return "permission";
 	}
+
+	@Override
+    protected PermLevel getDefaultPermLevelForEvaluator() {
+        return PermLevel.NONE;
+    }
+	
+	
 }

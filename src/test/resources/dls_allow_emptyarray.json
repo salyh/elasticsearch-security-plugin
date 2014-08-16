@@ -1,0 +1,12 @@
+{
+			 "rules": [
+			 	{
+				 	"hosts":[],
+				 	"indices":[],
+				 	"types":[],
+				 	"users":[],
+				 	"roles":[],
+				 	"dlstoken" : ["guesttoken"]
+			 	}
+			 ]		 		 
+}

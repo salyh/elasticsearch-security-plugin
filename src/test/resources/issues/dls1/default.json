@@ -1,0 +1,14 @@
+{
+  "dlspermissions": {
+    "*": {
+      "read": [ "*" ],
+      "update": [],
+      "delete": []
+    },
+    "message": {
+      "read": [ "t_admin" ],
+      "update": [ "t_admin" ],
+      "delete": [ "t_admin" ]
+    }
+  }
+}

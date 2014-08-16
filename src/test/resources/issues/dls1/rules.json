@@ -1,0 +1,16 @@
+{
+ "rules": [
+    {
+        "hosts" : [ "*" ],
+        "indices" : [ "*" ],
+        "types" : [ "*" ],
+        "dlstoken" : [ ]
+    },
+    {
+        "hosts" : [ "*" ],
+        "indices" : [ "logstash.*" ],
+        "types" : [ "*" ],
+        "dlstoken" : [ "t_admin" ]
+    }
+ ]               
+}

@@ -1,6 +1,0 @@
-{
-    "fields" : ["user", "message"],
-    "query" : {
-        "term" : { "user" : "saly" }
-    }
-}

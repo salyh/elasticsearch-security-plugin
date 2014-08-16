@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.elasticsearch.plugins.security.service.permission.PermEvaluator;
 
+
 public class PermDlsEvaluator extends PermEvaluator<List<String>> {
 
 	public PermDlsEvaluator(final String xSecurityConfiguration) {
@@ -35,5 +36,10 @@ public class PermDlsEvaluator extends PermEvaluator<List<String>> {
 	protected String getPermissionFieldName() {
 		return "dlstoken";
 	}
+	
+	@Override
+    protected List<String> getDefaultPermLevelForEvaluator() {
+	    return createFromString(null);
+    }
 
 }

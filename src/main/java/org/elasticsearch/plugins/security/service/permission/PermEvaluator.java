@@ -33,12 +33,18 @@ public abstract class PermEvaluator<T> {
 	}
 
 	protected abstract T createFromString(String s);
+	
+	protected abstract T getDefaultPermLevelForEvaluator();
 
 	protected abstract String getPermissionFieldName();
 
 	public T evaluatePerm(final List<String> indices, final List<String> types,
 			final InetAddress hostAddress, final UserRoleCallback callback)
 					throws MalformedConfigurationException {
+	    
+	    /*if(indices==null || types == null || hostAddress == null) {
+	        throw new MalformedConfigurationException("Indices, types and hostAddress must not be null");
+	    }*/
 
 		final List<Perm<T>> perms = new ArrayList<Perm<T>>();
 
@@ -51,7 +57,7 @@ public abstract class PermEvaluator<T> {
 
 			final String permissionFieldName = this.getPermissionFieldName();
 
-			XContentParser.Token token;
+			XContentParser.Token token = null;
 			String currentFieldName = null;
 			Perm<T> currentPerm = null;
 			while ((token = this.parser.nextToken()) != null) {
@@ -67,13 +73,18 @@ public abstract class PermEvaluator<T> {
 								"Duplicate permissions found");
 					}
 
-					if (currentPerm != null && !currentPerm.isValid()) {
-						log.error("Perm not valid " + currentPerm);
-						throw new MalformedConfigurationException(
-								"Invalid permission found");
-					}
+					/*if (currentPerm != null && !currentPerm.isValid()) {
+                        log.error("Perm not valid " + currentPerm);
+                        throw new MalformedConfigurationException(
+                                "Invalid permission found");
+                    }*/
 
 					if (currentPerm != null) {
+					    
+					    if(currentPerm.permLevel == null){
+					        currentPerm.permLevel = getDefaultPermLevelForEvaluator();
+					    }
+					    
 						perms.add(currentPerm);
 						currentPerm = null;
 					}
@@ -111,6 +122,11 @@ public abstract class PermEvaluator<T> {
 		} finally {
 			this.parser.close();
 		}
+		
+		
+		
+		
+		
 
 		log.debug("Checking " + perms.size() + " perms");
 
@@ -158,8 +174,12 @@ public abstract class PermEvaluator<T> {
 					&& !p.users.contains("*")
 					&& (callback == null || callback.getRemoteuser() == null || !p.users
 					.contains(callback.getRemoteuser()))) {
-				log.debug("User " + callback.getRemoteuser()
-						+ " does not match, so skip this permission");
+				if(callback != null) {
+			        log.debug("User " + callback.getRemoteuser()
+					+ " does not match, so skip this permission");
+				} else {
+				    log.debug("No callback");
+				}
 				continue permloop;
 			}
 
@@ -243,7 +263,7 @@ public abstract class PermEvaluator<T> {
 
 			log.debug("All types matches");
 
-			if (!p.indices.isEmpty() && !p.indices.contains("*")) {
+			if ( !p.indices.isEmpty() && !p.indices.contains("*")) {
 
 				
 				boolean indexMatch=false;
@@ -251,18 +271,21 @@ public abstract class PermEvaluator<T> {
 				indexloop:
                 for (final String pIndex : p.indices) {
 					
-					for (final String tIndex : indices)
-					{
-						if (isWildcardMatch(tIndex, pIndex)) {
-							log.debug("Index "+pIndex+" match " + tIndex + "");
-							indexMatch=true;
-							break indexloop;
+                    if(indices != null) {
+                        for (final String tIndex : indices)
+                        {
+                            if (isWildcardMatch(tIndex, pIndex)) {
+                                log.debug("Index "+pIndex+" match " + tIndex + "");
+                                indexMatch=true;
+                                break indexloop;
 
-						}else {
-							log.debug("Index "+pIndex+" not match " + tIndex + "");
-						}
-						
-					}
+                            }else {
+                                log.debug("Index "+pIndex+" not match " + tIndex + "");
+                            }
+                            
+                        }
+                    }
+					
 				}
 
 				if(!indexMatch)
@@ -281,7 +304,7 @@ public abstract class PermEvaluator<T> {
 			//added condition to check if indices provided are empty to validate the matching of index. This is required to allow requesting metadata queries like /_mapping, /_setting etc.
 			//(contributed by Ram Kotamaraja)
 			else
-			if(indices.isEmpty() && !p.indices.isEmpty() && !p.indices.contains("*") ){ 
+			if((indices == null || indices.isEmpty()) && !p.indices.isEmpty() && !p.indices.contains("*") ){ 
 
 				log.debug("Not all indexes match because no index specified, so skip this permission ["
 						+ p.indices + " != " + indices + "]");

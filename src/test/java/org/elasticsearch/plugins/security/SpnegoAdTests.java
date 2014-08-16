@@ -267,7 +267,7 @@ public class SpnegoAdTests extends SpnegoTests {
 		executeIndex("dls_default_test_allowall.json",
 				"securityconfiguration", "dlspermissions", "default", true);
 
-		executeIndex("fls_test_normal.json", "securityconfiguration",
+		executeIndex("dls_test_normal.json", "securityconfiguration",
 				"dlspermissions", "dlspermissions", true);
 
 		executeIndex("test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );

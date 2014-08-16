@@ -8,7 +8,7 @@
 
 	<groupId>com.github.salyh.elasticsearch</groupId>
 	<artifactId>elasticsearch-security-plugin</artifactId>
-	<version>0.0.2.Beta7-ea1.2</version>
+	<version>0.0.2.Beta8-ea1.2</version>
 	<packaging>jar</packaging>
 
 	<name>elasticsearch-security-plugin</name>
