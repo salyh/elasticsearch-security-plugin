@@ -128,7 +128,7 @@ public class ActionPathFilter extends SecureRestFilter {
 			// This means, there is a type specified in the request and so there
 			// is not need to do anything as the framework will take care of the
 			// type level security
-			log.debug("Not modifying the request as there is one or more types already associated with the request");
+			log.debug("Not modifying the request (for kibana) as there is one or more types already associated with the request");
 			reqTypesList = null;
 			return;
 		}

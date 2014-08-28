@@ -7,6 +7,7 @@ import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
 import io.searchbox.client.config.HttpClientConfig;
 import io.searchbox.client.http.JestHttpClient;
+import io.searchbox.core.Get;
 import io.searchbox.core.Index;
 import io.searchbox.core.Search;
 
@@ -225,6 +226,25 @@ public abstract class AbstractUnitTest {
 		return res;
 	}
 
+	protected JestResult executeGet(final String index, final String id,
+			final boolean mustBeSuccesfull) throws Exception {
+
+		final String [] userpass = getUserPass();
+
+		client = getJestClient(getServerUri(),userpass[0],userpass[1]);
+
+
+		final JestResult res = client.execute(new Get.Builder(index, id).refresh(true).setHeader(headers)
+				.build());
+
+		log.debug("Search operation result: " + res.getJsonString());
+		if (mustBeSuccesfull) {
+			Assert.assertTrue(res.isSucceeded());
+		} else {
+			Assert.assertTrue(!res.isSucceeded());
+		}
+		return res;
+	}
 
 	protected String [] getUserPass()
 	{

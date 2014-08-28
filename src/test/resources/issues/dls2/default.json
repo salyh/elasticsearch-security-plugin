@@ -1,0 +1,24 @@
+{
+  "dlspermissions": {
+    "*": {
+      "read": [],
+      "update": [],
+      "delete": []
+    },
+     "loglevel": {
+      "read": [ "t_everyone" ],
+      "update": [ "t_admin" ],
+      "delete": [ "t_admin" ]
+    },
+    "@timestamp": {
+      "read": [ "t_everyone" ],
+      "update": [ "t_admin" ],
+      "delete": [ "t_admin" ]
+    },
+    "message": {
+      "read": [ "t_admin" ],
+      "update": [ "t_admin" ],
+      "delete": [ "t_admin" ]
+    }
+  }
+}

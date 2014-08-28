@@ -96,9 +96,10 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 		}*/
 		try {
 
-			log.debug("RestResponse class " +response.getClass());
+			
 			
 			if(enableDls) {
+				log.debug("DLS is enabled");				
 				BytesReference modifiedContent = applyDls((BytesRestResponse)response);				
 				int contentLength = modifiedContent.length();
 				resp.setContentLength(contentLength);
@@ -107,6 +108,7 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 				out.close();
 			
 			} else {
+				log.debug("DLS is not enabled");	
 				int contentLength = response.content().length();
 				resp.setContentLength(contentLength);
 	            ServletOutputStream out = resp.getOutputStream();
@@ -130,12 +132,17 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 
 
 		final List<String> indices = SecurityUtil.getIndices(restRequest);
+		
+		log.debug("applyDLS() for indices "+indices);
+		
 		if (indices.contains(securityService
 				.getSecurityConfigurationIndex())) {
 
 			if (securityService
 					.getHostAddressFromRequest(restRequest)
 					.isLoopbackAddress()) {
+				
+				log.debug("applyDLS() return unmodified content because of loopback address");
 				return xres.content();
 						
 			} else {
@@ -147,14 +154,17 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 		if (xres.status().getStatus() < 200
 				|| xres.status().getStatus() >= 300) {
 
+			log.debug("applyDLS() return unmodified content because of status "+xres.status().getStatus());
 			return xres.content();
 		}
 
-		if (!restRequest.path().contains("_search")
+		if ( !restRequest.path().contains("_search")
 				&& !restRequest.path().contains("_msearch")
 				&& !restRequest.path().contains("_mlt")
-				&& !restRequest.path().contains("_suggest")) {
+				&& !restRequest.path().contains("_suggest")
+				&& !restRequest.getHttpServletRequest().getMethod().equalsIgnoreCase("get")  ) {
 
+			log.debug("applyDLS() return unmodified content because of path (no search): "+restRequest.getHttpServletRequest().getMethod()+" "+restRequest.path());
 			return xres.content();
 		}
 
@@ -191,6 +201,14 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 		fields.add("hits.hits._id");
 		fields.add("hits.hits._score");
 		
+		//GET
+		fields.add("_index");
+		fields.add("_type");
+		fields.add("_version");
+		fields.add("_id");
+		fields.add("found");
+		
+		
 		if(!securityService.isStrictModeEnabled()){
 			fields.add("facets"); 
 			fields.add("suggest");
@@ -198,11 +216,13 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 		
 
 		for (final DlsPermission p : perms) {
+			
+			log.debug(p.toString());
 
 			if (p.isAnyTokenAllowedToRead(dlsTokens)) {
 
 				fields.add("hits.hits._source." + p.getField());
-
+				fields.add("_source." + p.getField());
 			}
 
 		}

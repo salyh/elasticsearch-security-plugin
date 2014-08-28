@@ -80,5 +80,22 @@ public class DlsTests extends AbstractPermTests {
          
     }
     
+    @Test
+    public void issueDls2() throws Exception {
+
+        List<String> tokens = new ArrayList<String>();
+        tokens.add("t_everyone");
+        
+        final List<String> indices = new ArrayList<String>();
+		indices.add("testindex1");
+	
+        
+        final PermEvaluator<List<String>> evaluator = new PermDlsEvaluator(
+                loadFile("issues/dls2/rules.json"));
+        assertTrue(evaluator.evaluatePerm(indices, null,
+                InetAddress.getByName("8.8.8.8"), null).equals(tokens));
+         
+    }
+    
 
 }

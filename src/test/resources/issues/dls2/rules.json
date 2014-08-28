@@ -1,0 +1,16 @@
+{
+ "rules": [
+    {
+        "hosts" : [ "*" ],
+        "indices" : [ "*" ],
+        "types" : [ "*" ],
+        "dlstoken" : [ "t_everyone" ]
+    },
+    {
+        "hosts" : [ "one-not-existing-host" ],
+        "indices" : [ "*" ],
+        "types" : [ "*" ],
+        "dlstoken" : [ "t_admin" ]
+    }
+ ]               
+}

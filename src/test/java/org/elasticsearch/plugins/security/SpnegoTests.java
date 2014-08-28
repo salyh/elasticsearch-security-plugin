@@ -275,6 +275,26 @@ public abstract class SpnegoTests extends AbstractUnitTest {
 
     }
 
+	
+	@Test
+    public void issueDls2() throws Exception {
+
+        executeIndex("ur_test_normal.json", "securityconfiguration", "actionpathfilter", "actionpathfilter",true );
+
+
+        executeIndex("issues/dls2/default.json", "securityconfiguration","dlspermissions","default", true);
+        
+        executeIndex("issues/dls2/rules.json", "securityconfiguration",
+                "dlspermissions", "dlspermissions", true);
+
+        executeIndex("issues/dls2/data.json", "logstash-2014.04.03",
+                "log", "onelog", true);
+
+        JestResult res = executeGet("logstash-2014.04.03","onelog", true);
+        Assert.assertEquals(loadFile("issues/dls2/expected.json"), res.getJsonString());
+
+    }
+
 
 
 }
