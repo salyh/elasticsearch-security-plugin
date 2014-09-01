@@ -70,7 +70,7 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 
 	@Override
 	public void sendResponse(final RestResponse response) {
-
+		
 		resp.setContentType(response.contentType());
 		
 		//CORS
@@ -150,6 +150,11 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 			}
 
 		}
+		
+		if(xres.content() == null || xres.content().length() == 0) {
+			log.debug("applyDLS() return unmodified content because of content is null or of zero length");
+			return xres.content();
+		}
 
 		if (xres.status().getStatus() < 200
 				|| xres.status().getStatus() >= 300) {
@@ -163,7 +168,7 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 				&& !restRequest.path().contains("_mlt")
 				&& !restRequest.path().contains("_suggest")
 				&& !restRequest.getHttpServletRequest().getMethod().equalsIgnoreCase("get")  ) {
-
+					
 			log.debug("applyDLS() return unmodified content because of path (no search): "+restRequest.getHttpServletRequest().getMethod()+" "+restRequest.path());
 			return xres.content();
 		}
