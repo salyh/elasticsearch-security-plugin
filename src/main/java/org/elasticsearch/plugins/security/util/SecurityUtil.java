@@ -14,6 +14,7 @@ import org.elasticsearch.common.logging.Loggers;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.common.xcontent.XContentHelper;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.rest.RestChannel;
 import org.elasticsearch.rest.RestRequest;
@@ -346,4 +347,30 @@ public class SecurityUtil {
 	public static boolean isReadRequest(final RestRequest request, boolean strictModeEnabled) {
 		return !isWriteRequest(request, strictModeEnabled) && !isAdminRequest(request);
 	}
+	
+	public static XContentType xContentTypefromRestContentType(String contentType) {
+        if (contentType == null) {
+            return null;
+        }
+        
+        contentType = contentType.trim();
+        
+        if (contentType.startsWith("application/json") || contentType.startsWith("json")) {
+            return XContentType.JSON;
+        }
+        
+        if (contentType.startsWith("application/smile") || contentType.startsWith("smile")) {
+            return XContentType.SMILE;
+        }
+        
+        if (contentType.startsWith("application/yaml") || contentType.startsWith("yaml")) {
+            return XContentType.YAML;
+        }
+
+        if (contentType.startsWith("application/cbor") || contentType.startsWith("cbor")) {
+            return XContentType.CBOR;
+        }
+
+        return null;
+    }
 }

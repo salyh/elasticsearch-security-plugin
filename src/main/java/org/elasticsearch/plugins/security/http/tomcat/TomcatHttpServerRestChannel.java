@@ -96,10 +96,10 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 		}*/
 		try {
 
+			log.debug("Rest response contentype: "+response.contentType()+"/xcontent response contentype: "+ XContentType.fromRestContentType(response.contentType()));
 			
-			
-			if(enableDls) {
-				log.debug("DLS is enabled");				
+			if(enableDls && SecurityUtil.xContentTypefromRestContentType(response.contentType()) != null) { //skip text/html etc) {
+				log.debug("DLS is enabled and request contains valid xcontent");				
 				BytesReference modifiedContent = applyDls((BytesRestResponse)response);				
 				int contentLength = modifiedContent.length();
 				resp.setContentLength(contentLength);
@@ -108,7 +108,7 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 				out.close();
 			
 			} else {
-				log.debug("DLS is not enabled");	
+				log.debug("DLS is not enabled or response does not contain valid xcontent");	
 				int contentLength = response.content().length();
 				resp.setContentLength(contentLength);
 	            ServletOutputStream out = resp.getOutputStream();

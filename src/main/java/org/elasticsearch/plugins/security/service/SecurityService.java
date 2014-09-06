@@ -132,7 +132,7 @@ AbstractLifecycleComponent<SecurityService> {
 					throws MalformedConfigurationException {
 		final GetResponse resp = client
 				.prepareGet(securityConfigurationIndex, type, id)
-				.setRefresh(true).get();
+				.setRefresh(true).setOperationThreaded(false).get();
 
 		if (resp.isExists()) {
 			return resp.getSourceAsBytesRef();
