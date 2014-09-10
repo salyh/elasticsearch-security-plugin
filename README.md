@@ -61,7 +61,7 @@ Setup Kerberos
 * ``security.kerberos.mode: waffle|spnegoad|none`` Kerberos implementation (spnegoad is tomcat-built in Kerberos/SPNEGO support)
 
 If you use spnegoad then you must provide the following configuration parameters:
-* ``security.authorization.ldap.ldapurls: ldap://myldaphost:389`` Ldap Server
+* ``security.authorization.ldap.ldapurls: ldap://myldaphost:389`` Ldap Servers (you can configure a fallback by adding a comma separated second ldap url. This would then be used as tomcats alternateURL)
 * ``security.kerberos.login.conf.path: c:\path\to\login.conf`` JAAS login modules configuration
 * ``security.kerberos.krb5.conf.path: /path/to/krb5.conf`` Kerberos configuration file
 * ``security.authorization.ldap.connectionname: uid=admin,ou=system`` Low priv login to ldap server (Omit for anonymous authentication).
@@ -95,7 +95,7 @@ Optionally enable XFF
 
 Enable at least one of the two security modules 
 * ``security.module.actionpathfilter.enabled: true``
-* ``security.module.dls.enabled: true``
+* ``security.module.dls.enabled: true`` Note: DLS is an early development stage and considered to be "alpha"
 
 Enable strict mode if really needed (disabled by default, enable only if you know what you are doing)
 * ``security.strict: true`` Strict mode currently deny facet and suggester responses and treat some command like _mapping or _analyze as sensitive write requests 

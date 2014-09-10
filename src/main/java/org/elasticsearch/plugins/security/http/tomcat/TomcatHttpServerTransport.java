@@ -641,8 +641,8 @@ HttpServerTransport {
 	protected void configureJndiRealm(Context ctx)
 	{
 
-		final String ldapurls = settings
-				.get("security.authorization.ldap.ldapurls");
+		final String[] ldapurls = settings
+				.get("security.authorization.ldap.ldapurls").split(",");
 
 		final String sslroleattribute = settings
 				.get("security.ssl.userattribute");
@@ -666,7 +666,11 @@ HttpServerTransport {
 		//realm.setConnectionName("uid=admin,ou=system");
 		//realm.setConnectionPassword("secret");
 
-		realm.setConnectionURL(ldapurls);
+		realm.setConnectionURL(ldapurls[0].trim());
+		
+		if(ldapurls.length > 1) {
+		    realm.setAlternateURL(ldapurls[1].trim());
+		}
 
 		realm.setAuthentication("simple");
 		realm.setUseDelegatedCredential(false);
