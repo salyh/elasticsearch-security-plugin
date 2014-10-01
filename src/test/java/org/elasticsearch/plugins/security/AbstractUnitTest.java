@@ -257,7 +257,7 @@ public abstract class AbstractUnitTest {
 	}*/
 
 
-	private JestHttpClient getJestClient(String serverUri, final String username,
+	protected JestHttpClient getJestClient(String serverUri, final String username,
 			final String password) throws Exception {// http://hc.apache.org/httpcomponents-client-ga/tutorial/html/authentication.html
 		final HttpClientConfig clientConfig1 = new HttpClientConfig.Builder(serverUri)
 		.multiThreaded(true).build();

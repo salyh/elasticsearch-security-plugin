@@ -1,0 +1,14 @@
+{
+			 "rules": [
+			 	{				 
+				 	"permission" : "NONE"
+			 	},
+			 	{
+				 	"hosts" : [ "*" ],
+					"users" : [ "hnelson","test" ],
+				 	"indices" :[ "twitter" ],
+				 	"permission" : "READWRITE"
+			 	}
+			 ]		 		 
+}
+
