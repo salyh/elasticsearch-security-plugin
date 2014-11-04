@@ -1,3 +1,9 @@
+<img src="http://wiki.piratenpartei.de/wiki/images/thumb/d/d2/Achtung-Schild.svg/50px-Achtung-Schild.svg.png"/>
+
+Elasticsearch has announced their plans for a security product called "Shield" (http://www.elasticsearch.org/overview/shield).
+
+So currently the future of this plugin is uncertain. If there is enough feedback and a obvious need for free plugin like this one ("Shield" seems to be commercial so you have to pay for it?) maybe the effort continues.
+
 elasticsearch-security-plugin
 =============================
 [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
