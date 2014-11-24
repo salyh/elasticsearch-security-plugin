@@ -30,19 +30,19 @@ public class ActionPathFilter extends SecureRestFilter {
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
 				request.path(), SecurityUtil.BUILT_IN_ADMIN_COMMANDS)) {
-			log.warn("Index- or Typename should not contains admin commands like "
+			log.warn("Index- or Typename ("+request.path()+") should not contains admin commands like "
 					+ Arrays.toString(SecurityUtil.BUILT_IN_ADMIN_COMMANDS));
 		}
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
 				request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX)) {
-			log.warn("Index- or Typename should not contains search commands like "
+			log.warn("Index- or Typename("+request.path()+") should not contains search commands like "
 					+ Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX));
 		}
 
 		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
 				request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX)) {
-			log.warn("Index- or Typename should not contains write commands like "
+			log.warn("Index- or Typename("+request.path()+") should not contains write commands like "
 					+ Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX));
 		}
 
