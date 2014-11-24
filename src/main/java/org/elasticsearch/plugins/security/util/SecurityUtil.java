@@ -282,7 +282,7 @@ public class SecurityUtil {
 	
 
 	public static String[] BUILT_IN_ADMIN_COMMANDS = new String[] { "_cluster",
-		"_settings", "_close", "_open", "_template", "_status", "_stats",
+		"_settings", "_close", "_open", "_template", "_stats",
 		"_segments", "_cache", "_gateway", "_optimize", "_flush",
 		"_warmer", "_refresh", "_shutdown"};
 
@@ -290,7 +290,7 @@ public class SecurityUtil {
 		"_update", "_bulk", "_percolator","_mapping", "_aliases", "_analyze"};
 
 	public static String[] BUILT_IN_READ_COMMANDS_STRICT = new String[] { "_search",
-	"_msearch","_mlt", "_explain", "_validate","_count","_suggest", "_percolate",  "_nodes"};
+	"_msearch","_mlt", "_explain", "_validate","_count","_suggest", "_status", "_percolate",  "_nodes"};
 
 
 	public static String[] BUILT_IN_WRITE_COMMANDS_LAX = new String[] { "_create",
@@ -315,6 +315,8 @@ public class SecurityUtil {
 
 	public static boolean stringContainsItemFromListAsTypeOrIndex(
 			final String inputString, final String[] items) {
+        if(inputString.startsWith("/_"))
+            return false;
 		for (int i = 0; i < items.length; i++) {
 			if (inputString.contains("/" + items[i] + "/")) {
 				return true;

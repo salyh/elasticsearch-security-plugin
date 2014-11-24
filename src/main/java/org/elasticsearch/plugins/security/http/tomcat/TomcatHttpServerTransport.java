@@ -16,6 +16,7 @@ import java.util.Map;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.authenticator.BasicAuthenticator;
 import org.apache.catalina.authenticator.SSLAuthenticator;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.deploy.FilterDef;
@@ -23,6 +24,7 @@ import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.deploy.SecurityCollection;
 import org.apache.catalina.deploy.SecurityConstraint;
+import org.apache.catalina.realm.MemoryRealm;
 import org.apache.catalina.startup.Tomcat;
 
 import org.elasticsearch.ElasticsearchException;
@@ -88,7 +90,9 @@ HttpServerTransport {
 
 	private final SecurityService securityService;
 
-	private final String kerberosMode;
+  private final String kerberosMode;
+
+  private final Boolean basicMode;
 
 	private final Boolean useSSL;
 
@@ -182,6 +186,9 @@ HttpServerTransport {
 
 		kerberosMode = componentSettings.get("kerberos.mode",
 				settings.get("security.kerberos.mode", "none"));
+
+    basicMode = componentSettings.getAsBoolean("basic.auth.mode",
+        settings.getAsBoolean("security.basic.mode", false));
 
 		port = componentSettings.get("port",
 				settings.get("http.port", "8080"));
@@ -556,20 +563,40 @@ HttpServerTransport {
 
 
 
-				} else if ("none".equalsIgnoreCase(kerberosMode)) {
+        } else if ("none".equalsIgnoreCase(kerberosMode)) {
+          if (basicMode) {
+            final SecurityConstraint constraint = new SecurityConstraint();
+            constraint.addAuthRole("*");
+            constraint.setAuthConstraint(true);
 
-					logger
-					.warn("Kerberos is not configured so user/roles are unavailable. Host based security, in contrast, is woking. ");
+            final SecurityCollection col = new SecurityCollection();
+            col.addPattern("/*");
 
-				} else {
-					logger
-					.error("No Kerberos implementaion '"
-							+ kerberosMode
-							+ "' found. Kerberos is therefore not configured so user/roles are unavailable. Host based security, in contrast, is woking. ");
-				}
-			}
+            constraint.addCollection(col);
+            ctx.addConstraint(constraint);
+            final MemoryRealm realm = new MemoryRealm();
+            String usersFile = settings.get("security.basic.users.file", "tomcat-users.xml");
+            realm.setPathname(usersFile);
+            realm.setAllRolesMode("authOnly");
+            ctx.setRealm(realm);
+            final BasicAuthenticator basicValve = new BasicAuthenticator();
+            ctx.getPipeline().addValve(basicValve);
+            logger
+              .info("Basic auth mode is enabled, Host based security is also working. ");
+          } else {
+            logger
+              .warn("Kerberos is not configured so user/roles are unavailable. Host based security, in contrast, is working. ");
+          }
 
-			tomcat.start();
+        } else {
+          logger
+            .error("No Kerberos implementaion '"
+                   + kerberosMode
+                   + "' found. Kerberos is therefore not configured so user/roles are unavailable. Host based security, in contrast, is working. ");
+        }
+      }
+
+      tomcat.start();
 
 			logger.info("Tomcat started");
 
