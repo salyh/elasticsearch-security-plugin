@@ -90,9 +90,9 @@ HttpServerTransport {
 
 	private final SecurityService securityService;
 
-  private final String kerberosMode;
+    private final String kerberosMode;
 
-  private final Boolean basicMode;
+    private final Boolean basicMode;
 
 	private final Boolean useSSL;
 
