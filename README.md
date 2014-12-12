@@ -2,7 +2,7 @@
 
 Elasticsearch has announced their plans for a security product called "Shield" (http://www.elasticsearch.org/overview/shield).
 
-So currently the future of this plugin is uncertain. If there is enough feedback and a obvious need for free plugin like this one ("Shield" seems to be commercial so you have to pay for it?) maybe the effort continues.
+So currently the future of this plugin is uncertain. If there is enough feedback (and/or donations) and a obvious need for free plugin like this one ("Shield" seems to be commercial so you have to pay for it?) maybe the effort continues.
 
 elasticsearch-security-plugin
 =============================
@@ -35,7 +35,7 @@ As of now two security modules are implemented:
 (Until the first release is out you have to build this plugin yourself with maven or download from the github release page and install manually)
 
 Branches:
-* master for Elasticsearch 1.2.0 - 1.2.x
+* master for Elasticsearch 1.2.0 - 1.4.x
 * ea0.9 for Elasticsearch 0.90.10 - 0.90.x
 
 Prerequisites:
@@ -59,8 +59,9 @@ UNIX:
 
 <h4>Configuration (elasticsearch.yml)</h4>
 Enable the security plugin
-* ``http.type: org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerTransportModule``
-* ``script.disable_dynamic: true`` Dynamic scripts are unsafe and can potentially tamper this plugin
+* ``http.type: org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerTransportModule`` (for ES <= 1.3)
+* ``http.type: org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerTransport`` (for ES >= 1.4)
+* ``script.disable_dynamic: true`` Dynamic scripts are unsafe and can potentially tamper this plugin (not needed for ES 1.2 and above)
 * ``http.port: 9200`` Define exactly one port, Port ranges are not permitted
 
 Setup Kerberos

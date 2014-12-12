@@ -101,7 +101,7 @@ public abstract class AbstractUnitTest {
 				.put("index.number_of_replicas", "0")
 				.put(getProperties())
 				.put("http.type",
-						"org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerTransportModule");
+						"org.elasticsearch.plugins.security.http.tomcat.TomcatHttpServerTransport");
 
 	}
 

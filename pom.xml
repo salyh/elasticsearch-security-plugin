@@ -8,7 +8,7 @@
 
 	<groupId>com.github.salyh.elasticsearch</groupId>
 	<artifactId>elasticsearch-security-plugin</artifactId>
-	<version>0.0.2.Beta9-ea1.2</version>
+	<version>0.0.2.Beta9-ea1.4</version>
 	<packaging>jar</packaging>
 
 	<name>elasticsearch-security-plugin</name>
@@ -25,8 +25,16 @@
 		</license>
 	</licenses>
 
+        <distributionManagement>
+		<repository>
+			<id>bintray-salyh-maven-elasticsearch-river-imap</id>
+			<name>salyh-maven-elasticsearch-river-imap</name>
+			<url>https://api.bintray.com/maven/salyh/maven/elasticsearch-security-plugin</url>
+		</repository>
+	</distributionManagement>
+
 	<properties>
-		<elasticsearch.version>1.2.2</elasticsearch.version>
+		<elasticsearch.version>1.4.1</elasticsearch.version>
 		<tomcat.version>7.0.54</tomcat.version>
 		<apache.ds.version>2.0.0-M16</apache.ds.version>
 		<path.delim>\\</path.delim>
