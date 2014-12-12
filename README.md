@@ -4,6 +4,8 @@ Elasticsearch has announced their plans for a security product called "Shield" (
 
 So currently the future of this plugin is uncertain. If there is enough feedback (and/or donations) and a obvious need for free plugin like this one ("Shield" seems to be commercial so you have to pay for it?) maybe the effort continues.
 
+<a href='https://pledgie.com/campaigns/27742'><img alt='Click here to lend your support to: Elasticsearch free security plugin and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/27742.png?skin_name=chrome' border='0' ></a>
+
 elasticsearch-security-plugin
 =============================
 [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
