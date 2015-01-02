@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import com.google.common.base.Strings;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,10 +47,12 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 
 	final Boolean enableDls;
 
+  final String corsAllowOrigin;
+
 	public TomcatHttpServerRestChannel(
-			final TomcatHttpServerRestRequest restRequest,
-			final HttpServletResponse resp,
-			final SecurityService securityService) {
+		final TomcatHttpServerRestRequest restRequest,
+		final HttpServletResponse resp,
+		final SecurityService securityService) {
 		super(restRequest);
 		this.securityService = securityService;
 		this.restRequest = restRequest;
@@ -57,6 +61,8 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 
 		enableDls = securityService.getSettings().getAsBoolean(
 				"security.module.dls.enabled", true);
+
+    corsAllowOrigin = securityService.getSettings().get("security.cors.allow-origin");
 
 	}
 
@@ -72,15 +78,22 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 	public void sendResponse(final RestResponse response) {
 		
 		resp.setContentType(response.contentType());
-		
+
 		//CORS
-		resp.addHeader("Access-Control-Allow-Origin", "*"); 
+    if (!Strings.isNullOrEmpty(corsAllowOrigin)) {
+      resp.addHeader("Access-Control-Allow-Origin", corsAllowOrigin);
+    } else {
+		  resp.addHeader("Access-Control-Allow-Origin", "*"); 
+    }
+
 		//enhancing the list of allowed method list to meet the requirements of Kibana (contributed by Ram Kotamaraja)
 		resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
 		resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Content-Length, X-HTTP-Method-Override, Origin, Accept, Authorization");
-		//resp.addHeader("Access-Control-Allow-Credentials", "true");
 		resp.addHeader("Cache-Control", "max-age=0");
-			
+
+    if (securityService.getSettings().getAsBoolean("security.cors.allow-credentials", false)) {
+		  resp.addHeader("Access-Control-Allow-Credentials", "true");
+    }
 		
 		if (response.status() != null) {
 			resp.setStatus(response.status().getStatus());
