@@ -94,6 +94,8 @@ HttpServerTransport {
 
 	private final  Boolean useClientAuth;
 
+  final Boolean enableCors;
+
 	static {
 
 		System.setProperty("org.apache.catalina.connector.RECYCLE_FACADES",
@@ -173,6 +175,8 @@ HttpServerTransport {
 		 * 
 
 		 */
+
+    enableCors = componentSettings.getAsBoolean("cors.enabled", settings.getAsBoolean("security.cors.enabled", false));
 
 		useSSL = componentSettings.getAsBoolean("ssl.enabled",
 				settings.getAsBoolean("security.ssl.enabled", false));
@@ -433,6 +437,10 @@ HttpServerTransport {
 					final SecurityCollection col = new SecurityCollection();
 					col.addPattern("/*");
 
+          if (enableCors) {
+            col.removeMethod("OPTIONS");
+          }
+
 					constraint.addCollection(col);
 					ctx.addConstraint(constraint);
 
@@ -531,6 +539,10 @@ HttpServerTransport {
 					constraint.setDisplayName("spnego_sc_all");
 					final SecurityCollection col = new SecurityCollection();
 					col.addPattern("/*");
+
+          if (enableCors) {
+            col.removeMethod("OPTIONS");
+          }
 
 					constraint.addCollection(col);
 					ctx.addConstraint(constraint);
