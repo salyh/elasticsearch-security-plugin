@@ -66,6 +66,14 @@ Enable the security plugin
 * ``script.disable_dynamic: true`` Dynamic scripts are unsafe and can potentially tamper this plugin (not needed for ES 1.2 and above)
 * ``http.port: 9200`` Define exactly one port, Port ranges are not permitted
 
+Enable CORS if needed
+* ``security.cors.enabled: true`` Enable or disable cross-origin resource sharing, i.e. whether a browser on another origin can do requests to Elasticsearch. Defaults to false.
+* ``security.cors.allow-origin: $hostname`` Which origins to allow. Defaults to \*, i.e. any origin.
+* ``security.cors.max-age: 1728000`` Browsers send a "preflight" OPTIONS-request to determine CORS settings. Defines how long the result should be cached for. Defaults to 1728000 (20 days).
+* ``security.cors.allow-methods: "OPTIONS, HEAD, GET, POST, PUT, DELETE"`` Which methods to allow. Defaults to "OPTIONS, HEAD, GET, POST, PUT, DELETE"
+* ``security.cors.allow-headers: "X-Requested-With, Content-Type, Content-Length, X-HTTP-Method-Override, Origin, Accept, Authorization"`` Which headers to allow. Defaults to "X-Requested-With, Content-Type, Content-Length, X-HTTP-Method-Override, Origin, Accept, Authorization".
+* ``security.cors.allow-credentials: true`` Whether the Access-Control-Allow-Credentials header should be returned. Note: This header is only returned, when the setting is set to true. Defaults to false.
+
 Setup Kerberos
 * ``security.kerberos.mode: waffle|spnegoad|none`` Kerberos implementation (spnegoad is tomcat-built in Kerberos/SPNEGO support)
 

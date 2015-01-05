@@ -58,39 +58,43 @@ public class ActionPathFilter extends SecureRestFilter {
 					new TomcatUserRoleCallback(request
 							.getHttpServletRequest(),securityService.getSettings().get("security.ssl.userattribute")));
 
-			if (permLevel == PermLevel.NONE) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
+      if ( securityService.getSettings().getAsBoolean("security.cors.enabled", false) && !request.method().toString().equals("OPTIONS")) {
+        log.debug("Request Method is " + request.method() + ", checking security");
+
+			  if (permLevel == PermLevel.NONE) {
+				  SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
 						"No permission (at all)");
-				return;
-			}
+				  return;
+			  }
 
-			if (permLevel.ordinal() < PermLevel.ALL.ordinal()
+			  if (permLevel.ordinal() < PermLevel.ALL.ordinal()
 					&& SecurityUtil.isAdminRequest(request)) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
+				  SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
 						"No permission (for admin actions)");
-				return;
-			}
+				  return;
+			  }
 
-			if (permLevel.ordinal() < PermLevel.READWRITE.ordinal()
+			  if (permLevel.ordinal() < PermLevel.READWRITE.ordinal()
 					&& SecurityUtil.isWriteRequest(request,securityService.isStrictModeEnabled())) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
+				  SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
 						"No permission (for write actions)");
-				return;
-			}
+				  return;
+			  }
 
-			if (permLevel == PermLevel.READONLY
+			  if (permLevel == PermLevel.READONLY
 					&& !SecurityUtil.isReadRequest(request,securityService.isStrictModeEnabled())) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
+				  SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
 						"No permission (for read actions)");
-				return;
-			}
+				  return;
+			  }
 			
-			// Ram Kotamarja - START
-			// adding code to modify request modification before it hits elastic
-			// search to apply the search filters
-			modifiyKibanaRequest(request, channel);
-			// Ram Kotamaraja - END
-			
+			  // Ram Kotamarja - START
+			  // adding code to modify request modification before it hits elastic
+			  // search to apply the search filters
+			  modifiyKibanaRequest(request, channel);
+			  // Ram Kotamaraja - END
+
+      }
 
 			filterChain.continueProcessing(request, channel);
 			return;
