@@ -82,26 +82,30 @@ public class ActionPathFilter extends SecureRestFilter {
       }
 
       if (evalthem) {
+
+        if ( !securityService.getSettings().getAsBoolean("security.module.kibana.special", false) ) {
         log.debug("Evaluate the returned permissions");
 
-        if (permLevel == PermLevel.NONE) {
-          SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (at all)");
-          return;
-        }
+          if (permLevel == PermLevel.NONE) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (at all)");
+            return;
+          }
 
-        if (permLevel.ordinal() < PermLevel.ALL.ordinal() && SecurityUtil.isAdminRequest(request)) {
-          SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for admin actions)");
-          return;
-        }
+          if (permLevel.ordinal() < PermLevel.ALL.ordinal() && SecurityUtil.isAdminRequest(request)) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for admin actions)");
+            return;
+          }
 
-        if (permLevel.ordinal() < PermLevel.READWRITE.ordinal() && SecurityUtil.isWriteRequest(request,securityService.isStrictModeEnabled())) {
-          SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for write actions)");
-          return;
-        }
+          if (permLevel.ordinal() < PermLevel.READWRITE.ordinal() && SecurityUtil.isWriteRequest(request,securityService.isStrictModeEnabled())) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for write actions)");
+            return;
+          }
 
-        if (permLevel == PermLevel.READONLY && !SecurityUtil.isReadRequest(request,securityService.isStrictModeEnabled())) {
-          SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for read actions)");
-          return;
+          if (permLevel == PermLevel.READONLY && !SecurityUtil.isReadRequest(request,securityService.isStrictModeEnabled())) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for read actions)");
+            return;
+          }
+
         }
 
         modifiyKibanaRequest(request, channel);
