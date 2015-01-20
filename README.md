@@ -1,13 +1,20 @@
-<img src="http://wiki.piratenpartei.de/wiki/images/thumb/d/d2/Achtung-Schild.svg/50px-Achtung-Schild.svg.png"/>
+# News/Status
+This plugin is currently not maintained, all effort goes into a new project called "Elastic Defender" https://github.com/salyh/elastic-defender
 
-Elasticsearch has announced their plans for a security product called "Shield" (http://www.elasticsearch.org/overview/shield).
+Elastic Defender will be available February 2015 and will have most likely the following features:
+* Flexible access control (user/role based; on aliases, indices and types)
+* HTTP authentication (Basic, NTLM, SPNEGO/Kerberos, Client certificates)
+* Flexible authentication backends (LDAP/AD, file based, proxy) 
+* Flexible authorization backends (LDAP/AD, file based, proxy) 
+* Node-to-node encryption through SSL/TLS
+* Secure rest layer through HTTPS
+* X-Forwarded-For (XFF) support
+* Audit logging
+* No dependency to tomcat anymore, netty only
 
-So currently the future of this plugin is uncertain. If there is enough feedback (and/or donations) and a obvious need for free plugin like this one ("Shield" seems to be commercial so you have to pay for it?) maybe the effort continues.
+I'll answer questions and accept feature request via <a href="https://twitter.com/hendrikdev22">Twitter @hendrikdev22</a> or <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
 
-<a href='https://pledgie.com/campaigns/27742'><img alt='Click here to lend your support to: Elasticsearch free security plugin and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/27742.png?skin_name=chrome' border='0' ></a>
-
-elasticsearch-security-plugin
-=============================
+## elasticsearch-security-plugin
 [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
 
 <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
