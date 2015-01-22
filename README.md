@@ -12,6 +12,10 @@ Elastic Defender will be available February 2015 and will have most likely the f
 * Audit logging
 * No dependency to tomcat anymore, netty only
 
+There now is a first pre beta available upon request.
+Please send me a mail with your github username and you will get access to it here
+https://github.com/salyh/elastic-defender-private/
+
 I'll answer questions and accept feature request via <a href="https://twitter.com/hendrikdev22">Twitter @hendrikdev22</a> or <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
 
 ## elasticsearch-security-plugin
