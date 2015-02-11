@@ -1,24 +1,25 @@
 # News/Status
-This plugin is currently not maintained, all effort goes into a new project called "Elastic Defender" https://github.com/salyh/elastic-defender
+This plugin is no longer maintained, all effort goes into a new project called "Elastic Defender" https://github.com/salyh/elastic-defender
+
+[![Defender Logo](http://saly.de/elastic-defender.jpg)](http://saly.de/elastic-defender.jpg)
 
 Elastic Defender will be available February 2015 and will have most likely the following features:
 * Flexible access control (user/role based; on aliases, indices and types)
-* HTTP authentication (Basic, NTLM, SPNEGO/Kerberos, Client certificates)
-* Flexible authentication backends (LDAP/AD, file based, proxy) 
-* Flexible authorization backends (LDAP/AD, file based, proxy) 
+* HTTP authentication (Basic, NTLM, SPNEGO/Kerberos, Client certificates, via HTTP proxy)
+* Flexible authentication backends (LDAP/AD, file based) 
+* Flexible authorization backends (LDAP/AD, file based) 
 * Node-to-node encryption through SSL/TLS
 * Secure rest layer through HTTPS
 * X-Forwarded-For (XFF) support
 * Audit logging
+* HTTP session support through cookies
 * No dependency to tomcat anymore, netty only
 
 There now is a first pre beta available upon request.
-Please send me a mail with your github username and you will get access to it here
+Please send me a <a href="mailto:hendrikdev22@gmail.com">mail</a> with your github username and you will get access to it here
 https://github.com/salyh/elastic-defender-private/
 
-I'll answer questions and accept feature request via <a href="https://twitter.com/hendrikdev22">Twitter @hendrikdev22</a> or <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
-
-## elasticsearch-security-plugin
+## elasticsearch-security-plugin (Unmaintained)
 [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
 
 <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
