@@ -3,7 +3,7 @@ This plugin is no longer maintained, all effort goes into a new project called "
 
 [![Defender Logo](http://saly.de/elastic-defender.jpg)](http://saly.de/elastic-defender.jpg)
 
-Elastic Defender will be available February 2015 and will have most likely the following features:
+Elastic Defender will be available April (depends on beta feedback) 2015 and will have most likely the following features:
 * Flexible access control (user/role based; on aliases, indices and types)
 * HTTP authentication (Basic, NTLM, SPNEGO/Kerberos, Client certificates, via HTTP proxy)
 * Flexible authentication backends (LDAP/AD, file based) 
