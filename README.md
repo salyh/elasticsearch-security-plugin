@@ -3,7 +3,7 @@ This plugin is no longer maintained, all effort goes into a new project called "
 
 [![Defender Logo](http://saly.de/elastic-defender.jpg)](http://saly.de/elastic-defender.jpg)
 
-Elastic Defender will be available April (depends on beta feedback) 2015 and will have most likely the following features:
+Elastic Defender will have most likely the following features:
 * Flexible access control (user/role based; on aliases, indices and types)
 * HTTP authentication (Basic, NTLM, SPNEGO/Kerberos, Client certificates, via HTTP proxy)
 * Flexible authentication backends (LDAP/AD, file based) 
@@ -15,9 +15,7 @@ Elastic Defender will be available April (depends on beta feedback) 2015 and wil
 * HTTP session support through cookies
 * No dependency to tomcat anymore, netty only
 
-There now is a first pre beta available upon request.
-Please send me a <a href="mailto:hendrikdev22@gmail.com">mail</a> with your github username and you will get access to it here
-https://github.com/salyh/elastic-defender-private/
+Private beta is closed now.
 
 ## elasticsearch-security-plugin (Unmaintained)
 [![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
