@@ -1,24 +1,12 @@
 # News/Status
-This plugin is no longer maintained, all effort goes into a new project called "Elastic Defender" https://github.com/salyh/elastic-defender
+This plugin is no longer maintained, if you're looking for security for elasticsearch i recommend
 
-[![Defender Logo](http://saly.de/elastic-defender.jpg)](http://saly.de/elastic-defender.jpg)
-
-Elastic Defender will have most likely the following features:
-* Flexible access control (user/role based; on aliases, indices and types)
-* HTTP authentication (Basic, NTLM, SPNEGO/Kerberos, Client certificates, via HTTP proxy)
-* Flexible authentication backends (LDAP/AD, file based) 
-* Flexible authorization backends (LDAP/AD, file based) 
-* Node-to-node encryption through SSL/TLS
-* Secure rest layer through HTTPS
-* X-Forwarded-For (XFF) support
-* Audit logging
-* HTTP session support through cookies
-* No dependency to tomcat anymore, netty only
-
-Private beta is closed now.
+* [Search Guard](https://github.com/floragunncom/search-guard) - Free (and open source) plugin from floragunn UG 
+* [Shield](https://www.elastic.co/products/shield) - Commercial plugin from elastic
 
 ## elasticsearch-security-plugin (Unmaintained)
-[![Build Status](https://travis-ci.org/salyh/elasticsearch-security-plugin.png?branch=master)](https://travis-ci.org/salyh/elasticsearch-security-plugin)
+### This plugin is to be considered as insecure, do not use it because its unmaintained
+![Unmaintained](http://upload.wikimedia.org/wikipedia/en/thumb/5/57/Circle-style-warning.svg/200px-Circle-style-warning.svg.png)
 
 <a href="mailto:hendrikdev22@gmail.com">E-Mail hendrikdev22@gmail.com</a><p>
 <a href="https://twitter.com/hendrikdev22">Twitter @hendrikdev22</a>
