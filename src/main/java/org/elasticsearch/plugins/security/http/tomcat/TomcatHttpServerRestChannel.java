@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
+import com.google.common.base.Strings;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 
@@ -45,10 +47,22 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 
 	final Boolean enableDls;
 
+  final Boolean enableCors;
+
+  final Boolean corsAllowCredentials;
+
+  String corsAllowOrigin;
+
+  String corsAllowMethods;
+
+  String corsAllowHeaders;
+
+  String corsMaxAge;
+
 	public TomcatHttpServerRestChannel(
-			final TomcatHttpServerRestRequest restRequest,
-			final HttpServletResponse resp,
-			final SecurityService securityService) {
+		final TomcatHttpServerRestRequest restRequest,
+		final HttpServletResponse resp,
+		final SecurityService securityService) {
 		super(restRequest);
 		this.securityService = securityService;
 		this.restRequest = restRequest;
@@ -57,6 +71,18 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 
 		enableDls = securityService.getSettings().getAsBoolean(
 				"security.module.dls.enabled", true);
+
+    enableCors = securityService.getSettings().getAsBoolean("security.cors.enabled", false);
+
+    corsAllowCredentials = securityService.getSettings().getAsBoolean("security.cors.allow-credentials", false);
+
+    corsAllowOrigin = securityService.getSettings().get("security.cors.allow-origin");
+
+    corsAllowMethods = securityService.getSettings().get("security.cors.allow-methods");
+
+    corsAllowHeaders = securityService.getSettings().get("security.cors.allow-headers");
+
+    corsMaxAge = securityService.getSettings().get("security.cors.max-age");
 
 	}
 
@@ -72,28 +98,45 @@ public class TomcatHttpServerRestChannel extends HttpChannel {
 	public void sendResponse(final RestResponse response) {
 		
 		resp.setContentType(response.contentType());
-		
+
 		//CORS
-		resp.addHeader("Access-Control-Allow-Origin", "*"); 
-		//enhancing the list of allowed method list to meet the requirements of Kibana (contributed by Ram Kotamaraja)
-		resp.addHeader("Access-Control-Allow-Methods", "OPTIONS, HEAD, GET, POST, PUT, DELETE");
-		resp.addHeader("Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Content-Length, X-HTTP-Method-Override, Origin, Accept, Authorization");
-		//resp.addHeader("Access-Control-Allow-Credentials", "true");
-		resp.addHeader("Cache-Control", "max-age=0");
-			
+    if (enableCors) {
+      if (Strings.isNullOrEmpty(corsAllowOrigin)) {
+		    corsAllowOrigin = "*"; 
+      }
+
+      if (Strings.isNullOrEmpty(corsAllowMethods)) {
+		    corsAllowMethods = "OPTIONS, HEAD, GET, POST, PUT, DELETE"; 
+      }
+
+      if (Strings.isNullOrEmpty(corsAllowHeaders)) {
+		    corsAllowHeaders = "X-Requested-With, Content-Type, Content-Length, X-HTTP-Method-Override, Origin, Accept, Authorization"; 
+      }
+
+      if (Strings.isNullOrEmpty(corsMaxAge)) {
+		    corsMaxAge = "1728000"; 
+      }
+
+      resp.addHeader("Access-Control-Allow-Origin", corsAllowOrigin);
+		  resp.addHeader("Access-Control-Allow-Methods", corsAllowMethods);
+		  resp.addHeader("Access-Control-Allow-Headers", corsAllowHeaders);
+		  resp.addHeader("Cache-Control", "max-age=0");
+
+      if (corsAllowCredentials) {
+		    resp.addHeader("Access-Control-Allow-Credentials", "true");
+      }
+
+		  if (restRequest.method() == RestRequest.Method.OPTIONS) {
+			  resp.addHeader("Access-Control-Max-Age", corsMaxAge);
+		  }
+    }
 		
 		if (response.status() != null) {
 			resp.setStatus(response.status().getStatus());
 		} else {
 			resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
-		/*if (restRequest.method() == RestRequest.Method.OPTIONS) {
-			// TODO: also add more access control parameters
-			resp.addHeader("Access-Control-Max-Age", "1728000");
-			
-			
-		
-		}*/
+
 		try {
 
 			log.debug("Rest response contentype: "+response.contentType()+"/xcontent response contentype: "+ XContentType.fromRestContentType(response.contentType()));

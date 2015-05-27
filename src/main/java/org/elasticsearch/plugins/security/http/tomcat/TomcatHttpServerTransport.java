@@ -13,6 +13,7 @@ import static org.elasticsearch.common.network.NetworkService.TcpSettings.TCP_SE
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.Map;
+import java.util.Arrays;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
@@ -94,6 +95,8 @@ HttpServerTransport {
 
 	private final  Boolean useClientAuth;
 
+  final Boolean enableCors;
+
 	static {
 
 		System.setProperty("org.apache.catalina.connector.RECYCLE_FACADES",
@@ -173,6 +176,8 @@ HttpServerTransport {
 		 * 
 
 		 */
+
+    enableCors = componentSettings.getAsBoolean("cors.enabled", settings.getAsBoolean("security.cors.enabled", false));
 
 		useSSL = componentSettings.getAsBoolean("ssl.enabled",
 				settings.getAsBoolean("security.ssl.enabled", false));
@@ -433,6 +438,10 @@ HttpServerTransport {
 					final SecurityCollection col = new SecurityCollection();
 					col.addPattern("/*");
 
+          if (enableCors) {
+            col.removeMethod("OPTIONS");
+          }
+
 					constraint.addCollection(col);
 					ctx.addConstraint(constraint);
 
@@ -531,6 +540,17 @@ HttpServerTransport {
 					constraint.setDisplayName("spnego_sc_all");
 					final SecurityCollection col = new SecurityCollection();
 					col.addPattern("/*");
+
+          if (enableCors) {
+					  logger.debug("Cors is enabled, specifying methods excluding OPTIONS from security collection");
+            //col.removeMethod("OPTIONS");
+            col.addMethod("GET");
+            col.addMethod("PUT");
+            col.addMethod("POST");
+            col.addMethod("DELETE");
+            col.addMethod("HEAD");
+            logger.info("Protected methods are: " + Arrays.toString(col.findMethods()));
+          }
 
 					constraint.addCollection(col);
 					ctx.addConstraint(constraint);

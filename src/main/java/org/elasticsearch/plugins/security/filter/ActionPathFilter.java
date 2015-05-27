@@ -18,257 +18,243 @@ import org.elasticsearch.rest.RestStatus;
 
 public class ActionPathFilter extends SecureRestFilter {
 
-	public ActionPathFilter(final SecurityService securityService) {
-		super(securityService);
+  public ActionPathFilter(final SecurityService securityService) {
+    super(securityService);
 
-	}
+  }
 
-	@Override
-	public void processSecure(final TomcatHttpServerRestRequest request,
-			final TomcatHttpServerRestChannel channel,
-			final RestFilterChain filterChain) {
+  @Override
+  public void processSecure(final TomcatHttpServerRestRequest request,
+      final TomcatHttpServerRestChannel channel,
+      final RestFilterChain filterChain) {
 
-		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
-				request.path(), SecurityUtil.BUILT_IN_ADMIN_COMMANDS)) {
-			log.warn("Index- or Typename should not contains admin commands like "
-					+ Arrays.toString(SecurityUtil.BUILT_IN_ADMIN_COMMANDS));
-		}
+    if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex( request.path(), SecurityUtil.BUILT_IN_ADMIN_COMMANDS)) {
+      log.warn("Index- or Typename should not contains admin commands like " + Arrays.toString(SecurityUtil.BUILT_IN_ADMIN_COMMANDS));
+    }
 
-		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
-				request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX)) {
-			log.warn("Index- or Typename should not contains search commands like "
-					+ Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX));
-		}
+    if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex( request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX)) {
+      log.warn("Index- or Typename should not contains search commands like "
+          + Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_READ_COMMANDS_STRICT : SecurityUtil.BUILT_IN_READ_COMMANDS_LAX));
+    }
 
-		if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex(
-				request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX)) {
-			log.warn("Index- or Typename should not contains write commands like "
-					+ Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX));
-		}
+    if (SecurityUtil.stringContainsItemFromListAsTypeOrIndex( request.path(), securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX)) {
+      log.warn("Index- or Typename should not contains write commands like "
+          + Arrays.toString(securityService.isStrictModeEnabled()?SecurityUtil.BUILT_IN_WRITE_COMMANDS_STRICT : SecurityUtil.BUILT_IN_WRITE_COMMANDS_LAX));
+    }
 
-		try {
+    try {
 
-			final PermLevel permLevel = new PermLevelEvaluator(
-					securityService.getXContentSecurityConfiguration(
-							getType(), getId()))
-			.evaluatePerm(
-					SecurityUtil.getIndices(request),
-					SecurityUtil.getTypes(request),
-					getClientHostAddress(request),
-					new TomcatUserRoleCallback(request
-							.getHttpServletRequest(),securityService.getSettings().get("security.ssl.userattribute")));
+      final PermLevel permLevel = new PermLevelEvaluator(
+          securityService.getXContentSecurityConfiguration(getType(), getId())).evaluatePerm(
+            SecurityUtil.getIndices(request),
+            SecurityUtil.getTypes(request),
+            getClientHostAddress(request),
+            new TomcatUserRoleCallback(request.getHttpServletRequest(),securityService.getSettings().get("security.ssl.userattribute")));
+      
+      String secondpath = null;
 
-			if (permLevel == PermLevel.NONE) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
-						"No permission (at all)");
-				return;
-			}
+      try {
+        secondpath = request.path().split("/")[2];
+        log.debug("Second path is: "+secondpath);
+      }
+      catch (Exception e) {
+        log.debug("Request path split failed: " + e.getMessage());
+      }
 
-			if (permLevel.ordinal() < PermLevel.ALL.ordinal()
-					&& SecurityUtil.isAdminRequest(request)) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
-						"No permission (for admin actions)");
-				return;
-			}
+      boolean evalthem;
+      evalthem = true;
 
-			if (permLevel.ordinal() < PermLevel.READWRITE.ordinal()
-					&& SecurityUtil.isWriteRequest(request,securityService.isStrictModeEnabled())) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
-						"No permission (for write actions)");
-				return;
-			}
+      if (securityService.getSettings().getAsBoolean("security.cors.enabled", false) && request.method().toString().equals("OPTIONS")) { 
+        evalthem = false;
+      } else if (securityService.getSettings().getAsBoolean("security.module.kibana.special", false) && request.path().equals("/_nodes")) { 
+        evalthem = false;
+      } else if (securityService.getSettings().getAsBoolean("security.module.kibana.special", false) && secondpath.equals("_aliases")) { 
+        evalthem = false;
+      } else if (securityService.getSettings().getAsBoolean("security.module.kibana.special", false) && secondpath.equals("_mapping")) { 
+        evalthem = false;
+      }
 
-			if (permLevel == PermLevel.READONLY
-					&& !SecurityUtil.isReadRequest(request,securityService.isStrictModeEnabled())) {
-				SecurityUtil.send(request, channel, RestStatus.FORBIDDEN,
-						"No permission (for read actions)");
-				return;
-			}
-			
-			// Ram Kotamarja - START
-			// adding code to modify request modification before it hits elastic
-			// search to apply the search filters
-			modifiyKibanaRequest(request, channel);
-			// Ram Kotamaraja - END
-			
+      if (secondpath != null) {
+        if ( securityService.getSettings().getAsBoolean("security.module.kibana.special", false) && 
+            permLevel.ordinal() >= PermLevel.READONLY.ordinal() && secondpath.equals("_search") && SecurityUtil.isReadRequest(request,securityService.isStrictModeEnabled()) ) {
+          evalthem = false;
+        }
+      }
 
-			filterChain.continueProcessing(request, channel);
-			return;
-		} catch (final MalformedConfigurationException e) {
-			log.error("Cannot parse security configuration ", e);
-			SecurityUtil.send(request, channel,
-					RestStatus.INTERNAL_SERVER_ERROR,
-					"Cannot parse security configuration");
+      if (evalthem) {
 
-			return;
-		} catch (final Exception e) {
-			log.error("Generic error: ", e);
-			SecurityUtil.send(request, channel,
-					RestStatus.INTERNAL_SERVER_ERROR,
-					"Generic error, see log for details");
+        if ( !securityService.getSettings().getAsBoolean("security.module.kibana.special", false) ) {
+        log.debug("Evaluate the returned permissions");
 
-			return;
-		}
+          if (permLevel == PermLevel.NONE) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (at all)");
+            return;
+          }
 
-	}
-	
-	/**
-	 * Method added to modify the request on the fly to
-	 * allow it to process generic queries coming from kibana by
-	 * validating against the security framework (contributed by Ram Kotamaraja)
-	 * @param request
-	 */
-	private void modifiyKibanaRequest(
-			final TomcatHttpServerRestRequest request,
-			final TomcatHttpServerRestChannel channel) {
+          if (permLevel.ordinal() < PermLevel.ALL.ordinal() && SecurityUtil.isAdminRequest(request)) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for admin actions)");
+            return;
+          }
 
-		List<String> reqTypesList = SecurityUtil.getTypes(request);
-		if (reqTypesList != null && !reqTypesList.isEmpty()
-				&& reqTypesList.size() > 0) {
-			// This means, there is a type specified in the request and so there
-			// is not need to do anything as the framework will take care of the
-			// type level security
-			log.debug("Not modifying the request (for kibana) as there is one or more types already associated with the request");
-			reqTypesList = null;
-			return;
-		}
+          if (permLevel.ordinal() < PermLevel.READWRITE.ordinal() && SecurityUtil.isWriteRequest(request,securityService.isStrictModeEnabled())) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for write actions)");
+            return;
+          }
 
-		String kibanaPermLevel = null;
-		try {
-			kibanaPermLevel = securityService.getXContentSecurityConfiguration(
-					getType(), getKibanaId());
-		} catch (Exception e) {
-			log.debug("No Kibana configuration found, so continuing the rest of the process: "+e.getMessage());
-			return;
-		}
+          if (permLevel == PermLevel.READONLY && !SecurityUtil.isReadRequest(request,securityService.isStrictModeEnabled())) {
+            SecurityUtil.send(request, channel, RestStatus.FORBIDDEN, "No permission (for read actions)");
+            return;
+          }
 
-		List<String> kibanaTypesList = null;
-		List<String> authorizedTypesList = new ArrayList<String>();
-		try {
-			if (kibanaPermLevel != null && kibanaPermLevel.length() > 0) {
-				kibanaTypesList = securityService.getKibanaTypes(SecurityUtil
-						.getIndices(request));
-			}
+        }
 
-			final String reqContent = request.content().toUtf8();
-			String modifiedContent = reqContent;
+        modifiyKibanaRequest(request, channel);
+      
+      }
 
-			// checking where the original request has any types
-			List<String> requestTypes = SecurityUtil.getTypes(request);
+      filterChain.continueProcessing(request, channel);
+      return;
 
-			// If original request has any requests, then skip the logic below
-			// as
-			// permission evaluation has to be done based on that specific type
-			if (requestTypes == null || requestTypes.isEmpty()
-					|| requestTypes.size() == 0) {
-				if (kibanaTypesList != null) {
+    } catch (final MalformedConfigurationException e) {
+      log.error("Cannot parse security configuration ", e);
+      SecurityUtil.send(request, channel, RestStatus.INTERNAL_SERVER_ERROR, "Cannot parse security configuration");
 
-					// determine authorized types list
-					
+      return;
 
-					Iterator<String> kibanaTypesItr = kibanaTypesList
-							.iterator();
+    } catch (final Exception e) {
+      log.error("Generic error: ", e);
+      SecurityUtil.send(request, channel, RestStatus.INTERNAL_SERVER_ERROR, "Generic error, see log for details");
 
-					while (kibanaTypesItr.hasNext()) {
+      return;
+    }
 
-						List<String> kibanaType = new ArrayList<String>();
-						kibanaType.add((String) kibanaTypesItr.next());
-						final PermLevel permLevel = new PermLevelEvaluator(
-								securityService
-										.getXContentSecurityConfiguration(
-												getType(), getId()))
-								.evaluatePerm(
-										SecurityUtil.getIndices(request),
-										// SecurityUtil.getTypes(request),
-										kibanaType,
-										getClientHostAddress(request),
-										new TomcatUserRoleCallback(
-												request.getHttpServletRequest(),
-												securityService
-														.getSettings()
-														.get("security.ssl.userattribute")));
+  }
+  
+  /**
+   * Method added to modify the request on the fly to
+   * allow it to process generic queries coming from kibana by
+   * validating against the security framework (contributed by Ram Kotamaraja)
+   * @param request
+   */
+  private void modifiyKibanaRequest(
+      final TomcatHttpServerRestRequest request,
+      final TomcatHttpServerRestChannel channel) {
 
-						log.debug("Kibana perm level = "+permLevel);
+    List<String> reqTypesList = SecurityUtil.getTypes(request);
+    if (reqTypesList != null && !reqTypesList.isEmpty() && reqTypesList.size() > 0) {
+      log.debug("Not modifying the request (for kibana) as there is one or more types already associated with the request");
+      reqTypesList = null;
+      return;
+    }
 
-						if (!permLevel.equals(PermLevel.NONE)) {
-							authorizedTypesList.addAll(kibanaType);
-						}
-					}
+    String kibanaPermLevel = null;
+    try {
+      kibanaPermLevel = securityService.getXContentSecurityConfiguration(getType(), getKibanaId());
+    } catch (Exception e) {
+      log.debug("No Kibana configuration found, so continuing the rest of the process: " + e.getMessage());
+      return;
+    }
 
-					
+    List<String> kibanaTypesList = null;
+    List<String> authorizedTypesList = new ArrayList<String>();
+    try {
+      if (kibanaPermLevel != null && kibanaPermLevel.length() > 0) {
+        kibanaTypesList = securityService.getKibanaTypes(SecurityUtil.getIndices(request));
+      }
 
-					log.debug("Processing kibana types  "+ kibanaTypesList);
-					log.debug("request Content =  "+ reqContent);
+      final String reqContent = request.content().toUtf8();
+      String modifiedContent = reqContent;
 
-					String kibanaFilterStarter = "\"must\":[";
-					int beginIndex = reqContent.indexOf(kibanaFilterStarter);
-					
-					if (beginIndex > 0) {
-						String preReqContent = reqContent.substring(0,
-								beginIndex + kibanaFilterStarter.length());
-						String postReqContent = reqContent.substring(beginIndex
-								+ kibanaFilterStarter.length());
+      List<String> requestTypes = SecurityUtil.getTypes(request);
 
-						modifiedContent = preReqContent
-								+ "{\"or\": {\"filters\":[";
+      if (requestTypes == null || requestTypes.isEmpty() || requestTypes.size() == 0) {
+        log.debug("Allowed Kibana Types are: " + kibanaTypesList);
+        if (kibanaTypesList != null || !kibanaTypesList.isEmpty()) {
 
-						if (authorizedTypesList != null) {
-							Iterator<String> authorizedTypesItr = authorizedTypesList
-									.iterator();
-							while (authorizedTypesItr.hasNext()) {
-								modifiedContent += "{\"type\":{\"value\":\""
-										+ authorizedTypesItr.next().toString()
-										+ "\"}},";
-							}
-							modifiedContent = modifiedContent.substring(0,
-									modifiedContent.length() - 1);
-						}
+          Iterator<String> kibanaTypesItr = kibanaTypesList.iterator();
 
-						modifiedContent += "]}}," + postReqContent;
-						log.debug("modified request content = " + modifiedContent);
-												
-						request.setContent(new BytesArray(modifiedContent));
-						request.setAttribute(TomcatHttpServerRestRequest.REQUEST_CONTENT_ATTRIBUTE, request.getContent());
+          while (kibanaTypesItr.hasNext()) {
 
-					}
-				}
-			}
-		} catch (MalformedConfigurationException e) {
-			log.error("Cannot parse security configuration ", e);
-			SecurityUtil.send(request, channel,
-					RestStatus.INTERNAL_SERVER_ERROR,
-					"Cannot parse security configuration");
+            List<String> kibanaType = new ArrayList<String>();
+            kibanaType.add((String) kibanaTypesItr.next());
+            //At this point we have widdled down the search request, extracted the index and types.
+            //Since a kibana request is _search, it has no types, so we've extracted them and now must cross check real access against permLevel 
+            log.debug("Kibana perms checked for index: " + SecurityUtil.getIndices(request) + " and types: " + kibanaType);
+            final PermLevel permLevel = new PermLevelEvaluator(securityService.getXContentSecurityConfiguration(getType(), getId())).evaluatePerm(
+              SecurityUtil.getIndices(request),
+              kibanaType,
+              getClientHostAddress(request),
+              new TomcatUserRoleCallback(request.getHttpServletRequest(),securityService.getSettings().get("security.ssl.userattribute"))
+            );
 
-			return;
-		} catch (Exception e) {
-			log.error("Generic error: ", e);
-			SecurityUtil.send(request, channel,
-					RestStatus.INTERNAL_SERVER_ERROR,
-					"Generic error, see log for details");
+            log.debug("Kibana artificial perm level is: " + permLevel);
 
-			return;
-		}
+            if (!permLevel.equals(PermLevel.NONE)) {
+              authorizedTypesList.addAll(kibanaType);
+            }
+          }
 
-	}
+          //log.debug("Processing kibana types "+ kibanaTypesList);
+          log.debug("request Content = "+ reqContent);
 
-	/**
-	 * Method to return the default id (contributed by Ram Kotamaraja)
-	 * @return String - default id string
-	 */
-	 protected String getKibanaId() {
-				return "kibana";
-	 	}
+          String kibanaFilterStarter = "\"must\":[";
+          int beginIndex = reqContent.indexOf(kibanaFilterStarter);
+          
+          if (beginIndex > 0) {
+            String preReqContent = reqContent.substring(0, beginIndex + kibanaFilterStarter.length());
+            String postReqContent = reqContent.substring(beginIndex + kibanaFilterStarter.length());
 
-	@Override
-	protected String getType() {
+            modifiedContent = preReqContent + "{\"or\": {\"filters\":[";
 
-		return "actionpathfilter";
-	}
+            if (authorizedTypesList != null) {
+              Iterator<String> authorizedTypesItr = authorizedTypesList.iterator();
+              while (authorizedTypesItr.hasNext()) {
+                modifiedContent += "{\"type\":{\"value\":\"" + authorizedTypesItr.next().toString() + "\"}},";
+              }
+              modifiedContent = modifiedContent.substring(0, modifiedContent.length() - 1);
+            }
 
-	@Override
-	protected String getId() {
+            modifiedContent += "]}}," + postReqContent;
+            log.debug("modified request content = " + modifiedContent);
+                        
+            request.setContent(new BytesArray(modifiedContent));
+            request.setAttribute(TomcatHttpServerRestRequest.REQUEST_CONTENT_ATTRIBUTE, request.getContent());
 
-		return "actionpathfilter";
-	}
+          }
+        }
+      }
+    } catch (MalformedConfigurationException e) {
+      log.error("Cannot parse security configuration ", e);
+      SecurityUtil.send(request, channel, RestStatus.INTERNAL_SERVER_ERROR, "Cannot parse security configuration");
+
+      return;
+
+    } catch (Exception e) {
+      log.error("Generic error: ", e);
+      SecurityUtil.send(request, channel, RestStatus.INTERNAL_SERVER_ERROR, "Generic error, see log for details");
+
+      return;
+
+    }
+
+  }
+
+  /**
+  * Method to return the default id (contributed by Ram Kotamaraja)
+  * @return String - default id string
+  */
+  protected String getKibanaId() {
+    return "kibana";
+  }
+
+  @Override
+  protected String getType() {
+    return "actionpathfilter";
+  }
+
+  @Override
+  protected String getId() {
+    return "actionpathfilter";
+  }
 
 }
